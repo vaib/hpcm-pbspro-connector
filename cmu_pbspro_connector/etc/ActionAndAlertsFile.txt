@@ -1,0 +1,236 @@
+#This is a CMU action and alerts description file
+#CMU_VERSION=CMU V7.0
+#
+#
+#
+#=============================================================
+#Description of the ACTIONS Format is:
+#Name "Description" Timemultiple numerical  mesurement_method	max_value unit action_to_perform
+#or
+#Name "Description" Timemultiple string mesurement_method  unit action_to_perform
+#or
+#in case you are setting up the cmu collectl client....
+#
+#allmost all metrics are given in both COLLECTL and LEGACY syntax
+#
+#=============================================================
+#
+#
+ACTIONS
+#
+#
+#
+#-------------KERNEL VERSION, RELEASE, BIOS VERSIONS---------#
+kernel_version	     "kernel version"  9999999    string Instantaneous release uname -r
+#-------------CPU--------------------------------------------#
+#
+#- Native
+cpuload               "% cpu load (raw)"      1       numerical       MeanOverTime     100     %  awk '/cpu / {printf"%d\n",$2+$3+$4}' /proc/stat
+#- Collectl (only uncomment ONE metric of one particular name, e.g. only one line should start with cpuload)
+#cpuload "% cpu load (normalized)" 1 numerical Instantaneous 100 % COLLECTL (cputotals.user) + (cputotals.nice) + (cputotals.sys)
+#cpuload "% cpu load (normalized)" 1 numerical Instantaneous 100 % COLLECTL 100 - (cputotals.idle)
+#
+#-------------MEMORY-----------------------------------------#
+#
+#- Native
+memory_used	"% memory used"		1	numerical	Instantaneous	100	%	free | awk ' BEGIN { freemem=0; totalmemory=0; } /cache:/ { freemem=$4; } /Mem:/ { totalmemory=$2; } END {  printf "%d\n", (((totalmemory-freemem)*100)/totalmemory); }'
+process_memory	"% process memory"		1	numerical	 Instantaneous	100	%	awk ' BEGIN { page_cache=0; buffer_cache=0; total_mem=0; free_mem=0; } /MemTotal:/ { total_mem=$2; } /^Cached:/ { page_cache=$2; } /^Buffers:/ { buffer_cache=$2; } /^MemFree:/ { free_mem=$2; } END {  printf "%d\n", (((total_mem-free_mem-page_cache-buffer_cache)*100)/total_mem); }' /proc/meminfo
+page_cache	"% page cache"		1	numerical	Instantaneous	100	%	awk ' BEGIN { page_cache_kb=0; total_mem=0; } /MemTotal:/ { total_mem=$2; } /^Cached:/ { page_cache_kb=$2; } END {  printf "%d\n", ((page_cache_kb*100)/total_mem); }' /proc/meminfo
+buffer_cache	"% buffer cache"	1	numerical	Instantaneous	100	%	awk ' BEGIN { buffer_cache_kb=0; total_mem=0; } /MemTotal:/ { total_mem=$2; } /^Buffers:/ { buffer_cache_kb=$2; } END {  printf "%d\n", ((buffer_cache_kb*100)/total_mem); }' /proc/meminfo
+#memory_used_node0 "% memory used in node 0" 1 numerical Instantaneous 100 % awk '/MemUsed/ {a=$4} /MemTotal/ {b=$4} END{printf("%1.1f\n",a/b*100)}' /sys/devices/system/node/node0/meminfo
+#memory_used_node1 "% memory used in node 1" 1 numerical Instantaneous 100 % awk '/MemUsed/ {a=$4} /MemTotal/ {b=$4} END{printf("%1.1f\n",a/b*100)}' /sys/devices/system/node/node1/meminfo
+#- Collectl
+#memory_used "% memory used" 1 numerical Instantaneous 100 % COLLECTL (meminfo.used) / (meminfo.tot) * 100
+#process_memory "% process memory" 1 numerical Instantaneous 100 % COLLECTL (meminfo.map) / (meminfo.tot) * 100
+#page_cache "% page cache" 1 numerical Instantaneous 100 % COLLECTL (meminfo.cached) / (meminfo.tot) * 100
+#buffer_cache "% buffer cache" 1 numerical Instantaneous 100 % COLLECTL (meminfo.buf) / (meminfo.tot) * 100
+#
+#-------------CONTEXT SWITCHES-------------------------------#
+#
+#- Native
+#  This is not working yet, do not uncomment or the monitoring will do crazy things
+#ctx_switch_freq   "context switches frequency"	1	numerical	MeanOverTime	100	ctx_sw/s	cat /proc/stat  | awk '{ if ($1=="ctxt") print $2}'
+#- Collectl
+#ctx_switch_freq "context switches frequency" 1 numerical Instantaneous 100 ctx_sw/s COLLECTL (ctxint.ctx)
+#
+#-------------UPTIME-----------------------------------------#
+#
+#- Native
+uptime "uptime" 60 numerical Instantaneous 1 day(s) awk '{printf "%.1f\n",$1/86400}' /proc/uptime 
+#- Collectl
+#uptime "uptime" 60 numerical Instantaneous 1 day(s) COLLECTL (misc.uptime)
+#
+#-------------I/Os-------------------------------------------#
+#
+#- Native
+disk_write	"local disks write bandwidth"	1	numerical	MeanOverTime	10	MB/s	sh /opt/cmu/tools/io-write.sh
+disk_read	"local disks read bandwidth"  1       numerical	MeanOverTime	10	MB/s	sh /opt/cmu/tools/io-read.sh 
+#- Collectl
+#disk_write "local disks write bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (disktotals.writekbs) / 1024
+#disk_read "local disks read bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (disktotals.readkbs) / 1024
+#
+#-------------NETWORK----------------------------------------#
+#
+#- Native
+eth0_MB/s_rx	"MegaBytes/s received via eth0"		1	numerical	MeanOverTime	10	MB/s	awk '/eth0:/ {sub(/.*eth0:/, "") ; print $1/2^20}' </proc/net/dev
+eth0_MB/s_tx	"MegaBytes/s transmitted via eth0"	1	numerical	MeanOverTime	10	MB/s	awk '/eth0:/ {sub(/.*eth0:/, "") ; print $9/2^20}' </proc/net/dev
+eth1_MB/s_rx	"MegaBytes/s received via eth1"		1	numerical	MeanOverTime	10	MB/s	awk '/eth1:/ {sub(/.*eth1:/, "") ; print $1/2^20}' </proc/net/dev
+eth1_MB/s_tx	"MegaBytes/s transmitted via eth1"	1	numerical	MeanOverTime	10	MB/s	awk '/eth1:/ {sub(/.*eth1:/, "") ; print $9/2^20}' </proc/net/dev
+#ib0_MB/s_rx	"MegaBytes/s received via ib0"		1	numerical	MeanOverTime	10	MB/s	awk '/ib0:/ {sub(/.*ib0:/, "") ; print $1/2^20}' </proc/net/dev
+#ib0_MB/s_tx	"MegaBytes/s transmitted via ib0"	1	numerical	MeanOverTime	10	MB/s	awk '/ib0:/ {sub(/.*ib0:/, "") ; print $9/2^20}' </proc/net/dev
+#ib1_MB/s_rx	"MegaBytes/s received via ib1"		1	numerical	MeanOverTime	10	MB/s	awk '/ib1:/ {sub(/.*ib1:/, "") ; print $1/2^20}' </proc/net/dev
+#ib1_MB/s_tx	"MegaBytes/s transmitted via ib1"	1	numerical	MeanOverTime	10	MB/s	awk '/ib1:/ {sub(/.*ib1:/, "") ; print $9/2^20}' </proc/net/dev
+#- Collectl
+#net_out "network output bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (nettotals.kbout) / 1024
+#net_in "network input bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (nettotals.kbin) / 1024
+#eth0_out "eth0 output bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbout.eth0) / 1024
+#eth0_in "eth0 input bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbin.eth0) / 1024
+#eth1_out "eth1 output bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbout.eth1) / 1024
+#eth1_in "eth1 input bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbin.eth1) / 1024
+#These settings are for IP over IB, see Native IB if you do not configure IP over IB.
+#ib0_out "ib0 output bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbout.ib0) / 1024
+#ib0_in "ib0 input bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbin.ib0) / 1024
+#ib1_out "ib1 output bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbout.ib1) / 1024
+#ib1_in "ib1 input bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (netinfo.kbin.ib1) / 1024
+#
+#-------------Native IB-------------------------------------#
+#
+#- Native (assuming monitoring interval set to 5s)
+#IB_out "IB output bandwidth" 1 numerical Instantaneous 1 MB/s sh -c "if [ -e /opt/ofed/bin/perfquery ] ;then perfquery -r `cat /sys/class/infiniband/mthca0/ports/1/lid` 1 0x1000 |awk '/XmtBytes/ {print substr(\$1,34,10)/(1048576*5)}' ;fi"
+#IB_in "IB input bandwidth" 1 numerical Instantaneous 1 MB/s sh -c "if [ -e /opt/ofed/bin/perfquery ] ;then perfquery -r `cat /sys/class/infiniband/mthca0/ports/1/lid` 1 0x2000 |awk '/RcvBytes/ {print substr(\$1,34,10)/(1048576*5)}' ;fi"
+#- Collectl
+#IB_out "IB output bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (iconnect.kbout) / 1024
+#IB_in "IB input bandwidth" 1 numerical Instantaneous 10 MB/s COLLECTL (iconnect.kbin) / 1024
+#
+#-------------LOGINS-----------------------------------------#
+#
+#- Native
+logins "number of logins" 12 numerical Instantaneous 1 login(s) who -u -s | wc -l
+#- Collectl
+#logins "number of logins" 1 numerical Instantaneous 1 login(s) COLLECTL (misc.logins)
+#
+#-------------SWAP-------------------------------------------#
+#
+#- Native
+swap_avail "available swap space" 12 numerical Instantaneous 2048 MB awk '/SwapTotal/ {printf("%d\n",($2/1024))}' /proc/meminfo
+swap_used "% swap space used" 12 numerical Instantaneous 1 % awk ' BEGIN { free=0; total=0; } /SwapTotal/ { total=$2; } /SwapFree/ { free=$2; } END { printf("%d\n",((total-free)*100)/total); }' /proc/meminfo
+#- Collectl
+#swap_avail "available swap space" 1 numerical Instantaneous 2048 MB COLLECTL (swapinfo.total) / 1024
+#swap_used "% swap space used" 1 numerical Instantaneous 1 % COLLECTL (swapinfo.used) / (swapinfo.total) * 100
+#
+#-------------CPU clock speed -------------------------------#
+#
+#- Native
+cpu_frequency "current clock frequency of CPU #0" 12 numerical Instantaneous 1000 MHz awk '/cpu MHz/{print $4}' /proc/cpuinfo |head -1
+#- Collectl
+#cpu_frequency "current clock frequency of CPU #0" 1 numerical Instantaneous 1000 MHz COLLECTL (misc.cpuMHz)
+#
+#-------------lustre mounts-------------------------------------#
+#
+#- Native
+#lustre_mounts "number of mounted lustre filesystems" 12 numerical Instantaneous 1 mount(s) /bin/mount |grep lustre |wc -l
+#- Collectl
+#lustre_mounts "number of mounted lustre filesystems" 1 numerical Instantaneous 1 mount(s) COLLECTL (lusclt.numfs)
+#
+#-------------NFS mounts-------------------------------------#
+#
+#- Native
+NFS_mounts "number of mounted NFS filesystems" 12 numerical Instantaneous 1 mount(s) /bin/mount -t nfs |wc -l
+#- Collectl
+#NFS_mounts "number of mounted NFS filesystems" 1 numerical Instantaneous 1 mount(s) COLLECTL (misc.mounts)
+#
+#-------------HUGE PAGES-------------------------------------#
+#
+#- Native
+#hugepg_tot "total number of hugepages" 12 numerical Instantaneous 1 page(s) cat /proc/sys/vm/nr_hugepages
+#hugepg_used "number of allocated hugepages" 12 numerical Instantaneous 1 page(s) awk '/HugePages_Free/ {free=$2} /HugePages_Total/ {print $2 - free}' /proc/meminfo
+#- Collectl
+#hugepg_tot "total number of hugepages" 1 numerical Instantaneous 1 page(s) COLLECTL (meminfo.hugetot)
+#hugepg_used "number of allocated hugepages" 1 numerical Instantaneous 1 page(s) COLLECTL (meminfo.hugetot) - (meminfo.hugefree)
+#
+#-------------LSF--------------------------------------------#
+#
+#LSF_run_slots "number of slots allocated by LSF" 24 numerical Instantaneous 1 slot(s) sh -c " if [ -e /hptc_cluster ];then echo na;else bhosts `hostname` |awk '{if(NR==2)print \$6}';fi "
+#LSF_rsv_slots "number of slots reserved by LSF" 24 numerical Instantaneous 1 slot(s) sh -c " if [ -e /hptc_cluster ];then echo na;else bhosts `hostname` |awk '{if(NR==2)print \$9}';fi "
+#LSF_avail_slots "number of slots available to LSF" 24 numerical Instantaneous 1 slot(s) sh -c " if [ -e /hptc_cluster ];then echo na;else bhosts -l `hostname` |awk '{if(NR==3){if((\$1==\"ok\")||(\$1==\"closed_Excl\")||(\$1==\"closed_Full\")){print \$4}else{print 0}}}';fi "
+#
+#-------------TIME ALIGNEMENT CHECK--------------------------#
+#
+#timestamp "seconds_timestamp" 1 numerical Instantaneous 60 s date +"%S"
+#
+#-------------POWER CONSUMPTION------------------------------#
+#will not work on all HP server line. should work starting from G6 series
+#
+power "Watts" 12 numerical Instantaneous 100 Watts COLLECTL env.Power
+#
+#-------------MISC-------------------------------------------#
+#
+#HW_events "Hardware events" 1 numerical MeanOverTime 1 events sh -c '/opt/oprofile/bin/opcontrol --dump > /dev/null ; /opt/oprofile/bin/opreport -m all -n |awk "BEGIN{sum=0}{sum+=\$1}END{print sum}"'
+#
+#=============================================================
+#Description of the alerts. Format is:
+#Name "Message"	Level Timemultiple threshold comparison_operator unit action_to_perform
+#=============================================================
+#
+#
+ALERTS
+#
+#
+#cpu_freq_alert	"CPU frequency is not nominal"	1	24	100	<	%	sh -c "b=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq`;a=`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq`;echo 100 \* \$b / \$a |bc"
+#Name 		"Message"		Level 	Timemultiple 	threshold 	comparison_operator 	unit 		action_to_perform
+login_alert	"Someone is connected"	3	24		0		>			login(s)	w -h | wc -l
+root_fs_used	"The / filesystem is above 90% full"	4	24	90	>	%	df / | awk '{ if ($6=="/") print $5}' | cut -f 1 -d % -
+#reboot_alert    "Node rebooted"    4       24      5   <   rebooted   awk '{printf "%.1f\n",$1/60}' /proc/uptime
+# The line below allows to report MCE errors; be careful for possible false positives
+#mce_alert       "The kernel has logged MCE errors; please check /var/log/mcelog" 5 60 1 > lines wc -l /var/log/mcelog |cut -f 1 -d ' '
+
+### PBS Alert Configuration Start ###
+#
+#
+#Name 		"Message"		Level 	Timemultiple 	threshold 	comparison_operator 	unit 	action_to_perform
+node_down	"Node Down Detected"	1	24		0		>			node(s)	pbsnodes -l | grep "down" | wc -l
+#
+### PBS Alert Configuration End ###
+#
+#
+#===========================================================================================
+# Description of the alert reactions. Format is:
+# Alert_name [Alert_name2...] "Reaction message" ReactOnRaise|ReactAlways command(s)
+#
+# NOTES
+#
+#  ReactOnRaise|ReactAlways have the following meanings:
+#
+#    ReactOnRaise  - Execute 'command(s)' when alert shows as raised provided it was not raised on the last monitoring pass.
+#    ReactAlways   - Execute 'command(s)' when alert shows as raised (at the alert's time multiple).  
+#
+# 'command(s)' are any valid Linux commands.  The following keywords are supported in the 'command(s)'
+#  string.  A global substitution (throughout the command line) is done for each keyword before 'command(s)' is executed.
+#
+#    CMU_ALERT_NAME             - The name of the alert
+#    CMU_ALERT_LEVEL            - The level of the alert.
+#    CMU_REACT_MESSAGE          - The text of the reaction's "Reaction message"
+#    CMU_ALERT_NODES            - The list of all nodes that raised the alert during the current monitoring
+#                                 pass. The list is condensed in the form provided by cmu_condense_nodes.
+#    CMU_ALERT_ NODES_EXPANDED  - The same as CMU_ALERT_NODES only the list is expanded, ordered and separated by commas.
+#    CMU_ALERT_VALUES           - The list of alert values.  This list is comma separated and ordered
+#                                 like the names of CMU_ALERT_NODES_EXPANDED.
+#    CMU_ALERT_TIMES            - The times the alert was triggered on each node.  This list is comma
+#                                 separated and ordered like the names of CMU_ALERT_NODES_EXPANDED.
+#    CMU_ALERT_SEQUENCE_FILE    - The path of the CMU "sequence" file containing the alerts and
+#                                 alert values from the current monitoring pass.
+#
+#===========================================================================================
+#
+#
+ALERT_REACTIONS
+#
+#
+#login_alert  "Sending mail to root"  ReactOnRaise   echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/cmu/bin/pdsh -w CMU_ALERT_NODES 'w -h'`" | mailx -s "CMU: Alert 'CMU_ALERT_NAME' raised." root
+#
+#root_fs_used "Sending mail to root"  ReactOnRaise   echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/cmu/bin/pdsh -w CMU_ALERT_NODES 'df /'`" | mailx -s "CMU: Alert 'CMU_ALERT_NAME' raised!" root
+#
+#reboot_alert "Sending mail to root"  ReactOnRaise   echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/cmu/bin/pdsh -w CMU_ALERT_NODES 'uptime'`" | mailx -s "CMU: Alert 'CMU_ALERT_NAME' raised." root
+#
+node_down "
+#

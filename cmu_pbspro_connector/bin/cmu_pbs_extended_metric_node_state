@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# (C) Copyright 2012-2013 Altair Engineering, Inc.  All rights reserved.
+# This code is provided "as is" without any warranty, express or implied, or
+# indemnification of any kind.  All other terms and conditions are as
+# specified in the Altair PBS EULA.
+
+# Assumption:
+# This wrapper script assumes
+#  1) PBS Server/Scheduler is running on the CMU Management Node.
+#  2) Script is executed on the CMU Management Node.
+
+# Purpose:
+# This script is used to create a node_state file that organizes
+# the registered PBS nodes into their respective states (free, busy,
+# job-busy, down, offline, etc). The node_state file will be used
+# as input for the ActionAndAlertsFile.txt
+# /opt/cmu/bin/cmu_submit_extended_metrics -f/tmp/node_state
+
+# Source in PBS specific environment variables from pbs.conf
+if [ -f /etc/pbs.conf ]; then
+    . /etc/pbs.conf
+else
+    echo "Unable to find /etc/pbs.conf"
+    exit 1
+fi
+
+# Define CMU_PBSPRO_CONNECTOR, CMU_PATH
+CMU_PBSPRO_CONNECTOR=/opt/cmu/contrib/cmu_pbspro_connector
+CMU_PATH=/opt/cmu/bin
+CMU_SUBMIT_EXTENDED_METRIC=${CMU_PATH}/cmu_submit_extended_metrics
+
+declare -A node_state
+
+state_file=${CMU_PBSPRO_CONNECTOR}/tmp/extended_metric_node_state
+
+rm ${state_file}
+
+state=`${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]" -e state | sed '1~2 {N;s/\n/ /g}' | awk '{print $1";"$4}'`
+
+# Iterate through the registered PBS Professional nodes. associate
+# nodes to the known node_state
+for s in `echo "$state"` ; do
+   y=`echo $s | awk 'BEGIN { FS = ";" } ; { print $1 }'`
+   z=`echo $s | awk 'BEGIN { FS = ";" } ; { print $2 }'`
+   node_state+=( ["$z"]=" $y" )
+done
+
+# Construct the state_file, which will be read in by the
+# cmu_submit_extended_metric command
+for a in "${!node_state[@]}" ; do
+    echo "BEGIN_NODE ${node_state[$a]}
+node_state $a" >> ${state_file}
+done
+
+# Execute the cmu_submit_extended_metric
+${CMU_SUBMIT_EXTENDED_METRIC} -f ${state_file}

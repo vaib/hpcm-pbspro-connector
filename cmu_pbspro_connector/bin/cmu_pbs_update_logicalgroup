@@ -1,0 +1,66 @@
+#!/bin/sh
+
+# (C) Copyright 2012-2013 Altair Engineering, Inc.  All rights reserved.
+# This code is provided "as is" without any warranty, express or implied, or
+# indemnification of any kind.  All other terms and conditions are as
+# specified in the Altair PBS EULA.
+
+# Script to automatically update PBS Professional with HP CMU configured
+# groupings: logical_groups.
+#
+# HP CMU Logical Groups: A logical group in HP Insight CMU represents a disk
+#       image that has been captured (backed up). Based on this definition the
+#       logical group will be associated to the PBS Professional application
+#       operating environment (aoe) native resource.
+
+# TO-DO / Considerations:
+# - Consider using some type of caching to avoid pushing unnecessary changes
+# - Consider ability to [automatically] remove a group from a node that is no
+#   longer being used. At the moment, the script will only 'add' configs.
+
+# Source in the /etc/pbs.conf file
+[ -f /etc/pbs.conf ] && . /etc/pbs.conf
+
+CMU_PATH=/opt/cmu
+CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_entities
+CMU_SHOW_LOGICAL_GROUPS=${CMU_PATH}/bin/cmu_show_logical_groups
+CMU_SHOW_NODES=${CMU_PATH}/bin/cmu_show_nodes
+
+echo "Updating PBS Professional Application Operating Environment (aoe) with CMU Logical Groups"
+
+# Verify that cmu_provion hook is installed.
+echo "Verifying that the cmu_provision hook is installed..."
+if [[ ! -n `${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'` ]] ; then
+    echo "cmu_provision hook will be installed..."
+    ${PBS_EXEC}/bin/qmgr -c "create hook cmu_provision"
+    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_os_provision_hook.py"
+fi
+echo "....... DONE"
+echo " "
+
+# Removing existing aoe from all PBS Professional registered nodes
+echo "Removing existing aoe from all nodes..."
+for node in `${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]"` ; do
+    ${PBS_EXEC}/bin/qmgr -c "unset node ${node} resources_available.aoe"
+    ${PBS_EXEC}/bin/qmgr -c "unset node ${node} current_aoe"
+done
+echo "....... DONE"
+echo " "
+
+# Configuring PBS Professional with HP CMU configured logical_groups
+echo "Configuring logical_groups..."
+for logical_group in `${CMU_SHOW_LOGICAL_GROUPS}`; do
+    for node in `${CMU_SHOW_LOGICAL_GROUPS} ${logical_group}`; do
+        if [[ -n `${PBS_EXEC}/bin/pbsnodes ${node}` ]] ; then
+            ${PBS_EXEC}/bin/qmgr -c "set node ${node} resources_available.aoe += ${logical_group}"
+        fi
+    done
+done
+
+# After all types of aoes are defined, setting the current_aoe.
+for node in `${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]"` ; do
+    current_aoe=`${CMU_SHOW_NODES} -n ${node} -o "%l"`
+    ${PBS_EXEC}/bin/qmgr -c "set node ${node} current_aoe = ${current_aoe}"
+done
+echo "....... DONE"
+echo " "

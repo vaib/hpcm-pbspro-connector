@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# (C) Copyright 2012-2013 Altair Engineering, Inc.  All rights reserved.
+# This code is provided "as is" without any warranty, express or implied, or
+# indemnification of any kind.  All other terms and conditions are as
+# specified in the Altair PBS EULA.
+
+# Assumption:
+# This wrapper script assumes
+#  1) PBS Server/Scheduler is running on the CMU Management Node.
+#  2) Script is executed on the CMU Management Node.
+
+# Purpose:
+# This wrapper script is used to start or stop the PBS MOM daemon
+# on the compute nodes.
+
+# Source in PBS specific environment variables from pbs.conf
+if [ -f /etc/pbs.conf ]; then
+    . /etc/pbs.conf
+else
+    echo "Unable to find /etc/pbs.conf"
+    exit 1
+fi
+
+# Define CMU_PATH
+CMU_PATH=/opt/cmu/bin
+
+# Simple Usage statement
+Usage() {
+    cat <<EOF
+Usage: `basename $0` nodelist
+
+nodelist can be a space-separated list or a file
+
+EOF
+    exit 0
+}
+
+while getopts hu opt; do
+    case $opt in
+       h|u) Usage ;;
+    esac
+done
+
+# Setting up the variables in the order we are assuming they are passed in.
+nodelist=$*    # if used w/ CMU, this will be associated to CMU_TEMP_NODE_FILE
+
+# Check to see if the nodes are provided as a file or a space-separated list of
+# nodes names
+if [ -f "$nodelist" ] ; then
+    cmd=`cat $nodelist`
+else
+    cmd="$nodelist"
+fi
+
+# Pushing the nodelist through a for-loop to
+for node in $cmd ; do
+    # Quick check to see if the node even exists in PBS
+    node_ans=`$PBS_EXEC/bin/pbsnodes $node 2>/dev/null`
+
+    # If node does exist proceed with case statement logic
+    # If node does _not_ exist then echo simple error message
+    if [ -n "$node_ans" ]; then
+        case `basename $0` in
+            *stop)    $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"CMU Administrator stop PBS (`date +%m/%d/%y`)\""
+                      ssh ${node} /etc/init.d/pbs stop ;;
+            *restart) $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
+                      ssh ${node} /etc/init.d/pbs restart ;;
+            *start)   $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
+                      ssh ${node} /etc/init.d/pbs start ;;
+        esac
+    else
+        echo "Node: $node,  Error: Unknown node"
+    fi
+done

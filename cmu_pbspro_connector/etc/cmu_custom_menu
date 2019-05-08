@@ -1,0 +1,71 @@
+# CMU Custom Menu Option
+#
+# This file allows CMU users to add their own menu options to the CMU GUI.
+# These custom menu options are displayed in the popup menu that appears
+# after selecting one or more nodes from the left-side of the CMU GUI and
+# right-clicking on the selection. 
+#
+# file format: one line per custom menu option
+# line syntax: GUI|SERVER;<title>;<command>
+# 2 semicolons per line are required!
+#
+#   first field: GUI       = execute the command from the CMU GUI
+#   first field: SERVER    = execute the command from the CMU server
+#  second field: <title>   = name of this option in the menu
+#   third field: <command> = command line to be executed, including args
+#
+#
+# In the <title> field, a '|' can be used to create a submenu. For example,
+# to configure two webpages under one submenu called "Web":
+# GUI;Web|CMU;"C:\Program Files\Internet Explorer\iexplore.exe" www.hp.com/go/cmu
+# GUI;Web|HP ;"C:\Program Files\Internet Explorer\iexplore.exe" www.hp.com
+# 
+#
+# In the <command> field, CMU will convert the following keywords to their
+# respective values:
+#     CMU_SERVER_IP_ADDRESS  : IP address of the CMU management node
+#     CMU_TEMP_NODE_FILE     : Temporary file containing the selected nodes,
+#                              one nodename per line
+#     CMU_ONE_NODE_SELECTED  : nodename of selected node. Note that if more
+#                              than one node selected, this menu option will
+#                              be disabled. This is useful for commands that
+#                              are only designed to operate with one node.
+
+# The following additional keywords will be converted for 'SERVER' commands:
+#     CMU_GUI_IP_ADDRESS     : IP address of node running the CMU GUI
+#     CMU_GUI_DISPLAY_NUMBER : Display number of the CMU GUI X-Server
+#
+#
+# CMU recommends that these commands be simple scripts that do not produce
+# a lot of output. CMU recommends that these commands be tested locally
+# before configuring them in CMU.
+#
+# The CMU GUI must be restarted to incorporate any changes made to this file.
+#
+
+# Sample menu option 'Clear /tmp', that will use pdsh to
+# delete the contents of /tmp on the selected nodes. Note
+# that single quotes around the pdsh sub-command are needed
+# to ensure that the wildcard '*' works on the target nodes
+# and not on the CMU server node.
+#SERVER;Clear /tmp;env WCOLL=CMU_TEMP_NODE_FILE /opt/cmu/bin/pdsh -S 'rm -rf /tmp/*'
+
+# Sample menu option 'CMU Webpage' that will launch IE
+# and display the CMU web page (this option assumes that
+# the CMU GUI will be running on a Windows PC).
+#GUI;CMU Webpage;"C:\Program Files\Internet Explorer\iexplore.exe" www.hp.com/go/cmu
+
+# Sample menu option 'colplot' that will launch IE and
+# display colplot served from the CMU management node
+# (this options assumes that the CMU GUI will be running
+# on a Windows PC, and that colplot has been configured
+# on the CMU management node; see the CMU Users Guide
+# for details).
+#GUI;colplot;"C:\Program Files\Internet Explorer\iexplore.exe" CMU_SERVER_IP_ADDRESS/colplot
+
+# Sample menu options in an 'audit' submenu that execute
+# system inventory commands and compare the output from
+# the selected nodes using the new cmu_diff feature in
+# the cmu_dsh command.
+#SERVER;audit|dmidecode;/opt/cmu/bin/cmu_dsh -f CMU_TEMP_NODE_FILE -c "dmidecode" -e "-b -n -v0 -R0"
+#SERVER;audit|lspci;/opt/cmu/bin/cmu_dsh -f CMU_TEMP_NODE_FILE -c "lspci" -e "-b -n -v0 -R0"

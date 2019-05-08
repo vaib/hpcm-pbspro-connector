@@ -1,0 +1,249 @@
+#!/bin/bash
+ 
+# (C) Copyright 2012-2013 Altair Engineering, Inc.  All rights reserved.
+# This code is provided "as is" without any warranty, express or implied, or
+# indemnification of any kind.  All other terms and conditions are as
+# specified in the Altair PBS EULA.
+
+# Assumption:
+# This wrapper script assumes
+#  1) PBS Server/Scheduler is running on the CMU Management Node.
+#  2) Script is executed on the CMU Management Node.
+
+# Purpose:
+
+# Source in PBS specific environment variables from pbs.conf
+if [ -f /etc/pbs.conf ]; then
+   . /etc/pbs.conf
+else
+   echo "Unable to find /etc/pbs.conf"
+   exit 1
+fi
+
+# Define CMU_PATH
+CMU_PATH=/opt/cmu/bin
+
+# Simple Usage statement
+Usage() {
+         cat <<EOF
+Usage: `basename $0` nodelist
+
+nodelist can be a space-separated list or a file
+
+EOF
+    exit 0
+}
+
+while getopts c:hu opt; do
+    case $opt in
+        h|u) Usage ;;
+    esac
+done
+
+# Setting up the variables in the order we are assuming they are passed in.
+nodelist=$*    # if used w/ CMU, this will be associated to CMU_TEMP_NODE_FILE
+
+if [ ! -n "$nodelist" ] ; then
+    Usage
+fi
+
+# Check to see if the nodes are provided as a file or a space-separated list of
+# nodes names
+if [ -f "$nodelist" ] ; then
+    attr_nodelist=`cat $nodelist | sort -u`
+else
+    attr_nodelist=`echo $nodelist | sed -e 's/ /\n/g' | sort -u`
+fi
+
+function Task()
+{
+    # Nodelist selected by admin via CMU interface
+    node_list="$1"
+    task="$2"
+
+    # This section runs through the logic for suspending, checkpointing, or deleting the job on the selected node(s)
+    if [[  "$task" == "suspend"  ||  "$task" == "checkpoint"  ||  "$task" == "delete" || "$task" == "rerun" ]] ; then
+        # Determine job is requested node(s)
+        job_list=`${PBS_EXEC}/bin/pbsnodes ${node_list} | grep jobs |  sed -e 's/     jobs = //g' | sed -e 's/, /\n/g' | awk 'BEGIN {FS="/"}; {print $1}' | sort -u`
+
+        if [ -n "$job_list" ] ; then
+            case $task in
+                checkpoint)    ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has checkpointed the job" $job_list
+                               ${PBS_EXEC}/bin/qhold $job_list ;;
+                suspend)       ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has suspended the job" $job_list
+                               ${PBS_EXEC}/bin/qsig -s suspend $job_list ;;
+                delete)        ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has terminated the job" $job_list
+                               ${PBS_EXEC}/bin/qdel $job_list ;;
+                rerun)         ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has rerun the job. The job may start over from the beginning" $job_list
+                               ${PBS_EXEC}/bin/qrerun $job_list ;;
+            esac
+            echo "DONE: $task $job_list"
+        else
+            echo "No jobs to $task on $node_list"
+        fi
+
+    # This section runs through the logic for resume and release of job(s) on the selected node(s)
+    elif [[ "$task" == "resume"  ||  "$task" == "release" ]] ; then
+        if [[ "$task" == "resume" ]] ; then
+            # Determine job list output for suspended jobs, and ignore the first 6 lines of the qstat output.
+            job_list_sample=`${PBS_EXEC}/bin/qstat -an1 \`${PBS_EXEC}/bin/qselect -s S\` | tail -n +6`
+        elif [[ "$task" == "release" ]] ; then
+            # Determine job list output for checkpoint/held jobs, and ignore the first 6 lines of the qstat output.
+            job_list_sample=`${PBS_EXEC}/bin/qstat -an1 \`${PBS_EXEC}/bin/qselect -s H\` | tail -n +6`
+        else
+            echo "Error: error condition in resume and release"
+        fi
+
+        # Loop through the job list output looking for the selected node(s).
+        # if the select node is found, push the jobid onto the job_list, otherwise ignore it.
+        for n in $node_list ; do
+            job=`echo "$job_list_sample" | grep $n | awk '{print $1}'`
+            if [ -n "$job" ] ; then
+                job_list=${job}" "${job_list}
+            fi
+        done
+
+        # If the job_list is NOT empty, perform the requested task (resume or release) with the job_list
+        # Else notify the CMU Administrator that no jobs were found on the node, and exit
+        if [ -n "$job_list" ] ; then
+            case $task in
+                resume)     ${PBS_EXEC}/bin/qsig -s resume $job_list
+                            ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has resumed the job" $job_list ;;
+                release)    ${PBS_EXEC}/bin/qrls $job_list
+                            sleep 3  # It takes a few seconds to release the job, so wait and then qmsg the job.
+                            ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has released the job" $job_list ;;
+            esac
+            echo "DONE: $task $job_list"
+        else
+            echo "No jobs to $task on $node_list"
+            exit
+        fi
+
+    # This section runs through the logic for showing the suspend or checkpoint job(s) on the selected node(s)
+    # Pretty tricky section as it uses associative arrays, and only works with bash version 4.x. If bash 4.x
+    # is not available, then these options should not be available to the administrator. OR this needs to be
+    # re-written with awk or converted to python / perl.
+    elif [[ "$task" == "show_suspend" || "$task" == "show_checkpoint" ]] ; then
+        if [ -n "$node_list" ] ; then
+            # declare an associative array
+            declare -A job_node
+            declare -A node_job
+
+            # Unlike resume or release, the jobid and the node_list are captured into job_list_sample, and
+            # will be evaluated to see if job(s) existed on the selected node(s)
+            if [[ "$task" == "show_suspend" ]] ; then
+                # Determine job list output for suspend jobs
+                # If qselect is empty, exit the logic immediately. Otherwise executing qstat with an empty result
+                # will result in qstat output all jobs
+                jobs=`qselect -s S`
+                if [[ -n "$jobs" ]] ; then
+                    job_list_sample=`${PBS_EXEC}/bin/qstat -n1 $jobs | tail -n +6 | awk '{print $1","$12}' | sed -e 's/\/\w*//g' | sed -e 's/\*\w//g'`
+                else
+                    echo "No jobs to $task on $node_list"
+                    exit
+                fi
+            elif [[ "$task" == "show_checkpoint" ]] ; then
+                # Determine job list output for checkpoint jobs
+                # If qselect is empty, exit the logic immediately. Otherwise executing qstat with an empty result
+                # will result in qstat output all jobs
+                jobs=`qselect -s H`
+                if [[ -n "$jobs" ]] ; then
+                    job_list_sample=`${PBS_EXEC}/bin/qstat -n1 $jobs | tail -n +6 | awk '{print $1","$12}' | sed -e 's/\/\w*//g' | sed -e 's/\*\w//g'`
+                else
+                    echo "No jobs to $task on $node_list"
+                    exit
+                fi
+            else
+                echo "Error: error condition in show_suspend and show_checkpoint"
+            fi
+
+            # if job list sample is NOT empty, this section will create an associative array with job, node
+            if [ -n "$job_list_sample" ] ; then
+                for a in `echo "$job_list_sample"` ; do
+                    for x in `echo $a` ; do
+                        y=`echo $a | awk 'BEGIN { FS = "," } ; { print $1 }'`
+                        z=`echo $a | awk 'BEGIN { FS = "," } ; { print $2 }' | sed -e 's/\+/ /g'`
+                        job_node+=( ["$y"]="$z" )
+                    done
+                done
+
+                #iterate over the reverse the associative array node, job. It is important
+                # not to repeat the jobids
+                for j in "${!job_node[@]}" ;  do
+                    for n in ${job_node[$j]} ; do
+                        node_job+=( ["$n"]="$j, " )
+                    done
+                done
+
+                # attempting to provide the output similar to pbsnodes jobs attribute.
+                for node in "${!node_job[@]}" ; do
+                    for attr_node in `echo "$node_list"` ; do
+                        if [[ "$attr_node" == "$node" ]] ; then
+                            output="$node
+      jobs = ${node_job[$node]}"
+                            echo "${output%??}"
+                        fi
+                    done
+                done
+            else
+                echo "No jobs to $task on $node_list"
+                exit
+            fi
+        fi
+
+    # This section runs through the logic for showing the run job(s) on the selected node(s)
+    elif [[ "$task" == "show_run" ]] ; then
+        # If the node_list is NOT empty, test for a job executing on the node.
+        # Else notify the CMU Administrator that no jobs were found on the node, and exit
+        if [ -n "$node_list" ] ; then
+            for node in `echo "$node_list"` ; do
+                job_test=`${PBS_EXEC}/bin/pbsnodes ${node} | grep jobs`
+                if [[ -n "$job_test" ]] ; then
+                    output=`${PBS_EXEC}/bin/pbsnodes ${node} | grep -e "^[[:alnum:]]" -e jobs`
+                    echo "${output%}"
+                fi
+            done
+            if [[ ! -n "${output%}" ]] ; then
+                echo "No jobs to $task on $node_list"
+                exit
+            fi
+        else
+            echo "No jobs to $task on $node_list"
+            exit
+        fi
+    else
+        echo "Error: Contact admin, logic error in function with $task"
+    fi
+}
+
+# Pushing the nodelist through a for loop to make sure node exists
+isPBS_Node=""
+for node in $attr_nodelist ; do
+    # Quick check to see if the node even exists in PBS
+    node_ans=`$PBS_EXEC/bin/pbsnodes ${node} 2>/dev/null`
+
+    # If node does exist proceed with online/offline logic
+    # If node does _not_ exist then echo simple error message
+    if [ -n "$node_ans" ]; then
+        isPBS_Node=${isPBS_Node}" "${node}
+    else
+        echo "${node} does not exist"
+    fi
+done
+
+# If the node exists within PBS, continue to execute the tasks. There is a catchall
+# if the task requested is NOT available.
+if [ -n "${isPBS_Node}" ] ; then
+    case `basename $0` in
+        *show_run)        Task "${isPBS_Node}" "show_run" ;;
+        *show_suspend)    Task "${isPBS_Node}" "show_suspend" ;;
+        *show_checkpoint) Task "${isPBS_Node}" "show_checkpoint" ;;
+        *delete)          Task "${isPBS_Node}" "delete" ;;
+        *suspend)         Task "${isPBS_Node}" "suspend" ;;
+        *resume)          Task "${isPBS_Node}" "resume" ;;
+        *checkpoint)      Task "${isPBS_Node}" "checkpoint" ;;
+        *release)         Task "${isPBS_Node}" "release" ;;
+        *rerun)           Task "${isPBS_Node}" "release" ;;
+        *)                echo "Error: Task is unknown" ;;
+    esac
+fi

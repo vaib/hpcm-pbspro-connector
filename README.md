@@ -1,2 +1,2 @@
-# hpcm-pbspro-connector
-HPCM pbspro connector
+pbs-hp-cmu
+==========
