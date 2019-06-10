@@ -1,10 +1,10 @@
 #!/bin/sh
 
-tarball="packages/cmu_pbspro_connector-`date \"+%Y%m%d\"`.tar.gz"
+tarball="packages/hpcm_pbspro_connector-`date \"+%Y%m%d\"`.tar.gz"
 
 if [[ -f $tarball ]] ; then
     echo "$tarball EXISTS!"
     exit -1
 else
-    gnu_tar -zcvf $tarball --owner=0 --group=0 --numeric-owner cmu_pbspro_connector
+    gnu_tar -zcvf $tarball --owner=0 --group=0 --numeric-owner hpcm_pbspro_connector
 fi

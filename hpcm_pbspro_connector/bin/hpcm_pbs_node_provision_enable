@@ -60,7 +60,7 @@ if [[ -n "${chk_prov_hook}" ]] ; then
 else
     echo "Creating cmu_provision hook..."
     ${PBS_EXEC}/bin/qmgr -c "create hook cmu_provision event = provision"
-    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_os_provision_hook.py"
+    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/cmu/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py"
     echo "....... DONE"
 fi
 

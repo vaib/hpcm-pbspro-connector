@@ -25,14 +25,14 @@ else
     exit 1
 fi
 
-# Define CMU_PBSPRO_CONNECTOR, CMU_PATH
-CMU_PBSPRO_CONNECTOR=/opt/cmu/contrib/cmu_pbspro_connector
+# Define hpcm_pbspro_connector, CMU_PATH
+hpcm_pbspro_connector=/opt/cmu/contrib/hpcm_pbspro_connector
 CMU_PATH=/opt/cmu/bin
 CMU_SUBMIT_EXTENDED_METRIC=${CMU_PATH}/cmu_submit_extended_metrics
 
 declare -A node_state
 
-state_file=${CMU_PBSPRO_CONNECTOR}/tmp/extended_metric_node_state
+state_file=${hpcm_pbspro_connector}/tmp/extended_metric_node_state
 
 rm ${state_file}
 
