@@ -1,0 +1,65 @@
+# CMU Custom Menu Option for CMU PBS Professional Connector
+# This should be appended to the CMU custom menu file located in /opt/cmu/etc/cmu_custom_menu
+#
+# PBS Custom Menu Controls Start ###
+#
+# Delete, Suspend, Resume, Checkpoint, Release, Show Running, Show Suspended, Show Checkpointed jobs on select node(s)
+SERVER;CMU PBS Professional Connector|Delete jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_delete CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Suspend jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_suspend CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Resume jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_resume CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Checkpoint jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_checkpoint CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Release jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_release CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Rerun/Checkpoint-Migrate jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_rerun CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Show running jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_show_run CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Show suspended jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_show_suspend CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Show checkpointed jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_job_show_checkpoint CMU_TEMP_NODE_FILE
+#
+# Offline vs Online of nodes
+SERVER;CMU PBS Professional Connector|Offline/Drain node;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_offline CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Online node;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_online CMU_TEMP_NODE_FILE
+#
+# Production vs Maintenance of nodes
+SERVER;CMU PBS Professional Connector|Put node into maintenance;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_maintenance CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Put node into production;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_production CMU_TEMP_NODE_FILE
+#
+# OS Provisioning Configuration
+SERVER;CMU PBS Professional Connector|Enable PBS OS provisioning;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_provision_enable CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Disable PBS OS provisioning;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_provision_disable CMU_TEMP_NODE_FILE
+#
+# Register / Unregister Nodes within PBS
+SERVER;CMU PBS Professional Connector|Register node with PBS;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_register CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Unregister node with PBS;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_node_unregister CMU_TEMP_NODE_FILE
+#
+# Start/Stop PBS MOM on compute nodes
+SERVER;CMU PBS Professional Connector|Restart PBS MOM;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_mom_restart CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Stop PBS MOM;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_mom_stop CMU_TEMP_NODE_FILE
+SERVER;CMU PBS Professional Connector|Start PBS MOM;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_mom_start CMU_TEMP_NODE_FILE
+#
+# Configure PBS Server and Scheduler config files
+# The following keywords have been deprecated as of 7.2: CMU_GUI_IP_ADDRESS and CMU_GUI_DISPLAY_NUMBER. Thus why the SERVER lines are commented out
+# It is recommended to begin using TERMINAL
+#SERVER;CMU PBS Professional Connector|Configure PBS Server (qmgr);xterm -display CMU_GUI_IP_ADDRESSCMU_GUI_DISPLAY_NUMBER -e /opt/pbs/default/bin/qmgr
+#SERVER;CMU PBS Professional Connector|Configure PBS Custom Resources (resourcedef);xterm -display CMU_GUI_IP_ADDRESSCMU_GUI_DISPLAY_NUMBER -e vi /var/spool/PBS/server_priv/resourcedef; /opt/pbs/default/bin/qterm -t quick ; /etc/init.d/pbs start
+#SERVER;CMU PBS Professional Connector|Configure PBS Scheduler (sched_config);xterm -display CMU_GUI_IP_ADDRESSCMU_GUI_DISPLAY_NUMBER -e vi /var/spool/PBS/sched_priv/sched_config; kill -HUP `cat /var/spool/PBS/sched_priv/sched.lock`
+TERMINAL;CMU PBS Professional Connector|Configure PBS Server (qmgr);"/opt/pbs/default/bin/qmgr"
+TERMINAL;CMU PBS Professional Connector|Configure PBS Custom Resources (resourcedef);"vi /var/spool/PBS/server_priv/resourcedef ; echo \"Restarting Server to acknowledge changes to resourcedef\" ; /opt/pbs/default/bin/qterm -t quick ; /etc/init.d/pbs start ; echo \"Done\""
+TERMINAL;CMU PBS Professional Connector|Configure PBS Scheduler (sched_config);"vi /var/spool/PBS/sched_priv/sched_config ; echo \"Scheduler re-reading sched_config\" ; kill -HUP `cat /var/spool/PBS/sched_priv/sched.lock` ; echo \"Done\""
+#
+# Start/Stop PBS Server/Scheduler on head node :: Assumes PBS Server/Scheduler is running on CMU headnode.
+SERVER;CMU PBS Professional Connector|Restart PBS Server/Scheduler;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_server_scheduler_restart
+SERVER;CMU PBS Professional Connector|Stop PBS Server/Scheduler;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_server_scheduler_stop
+SERVER;CMU PBS Professional Connector|Start PBS Server/Scheduler;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_server_scheduler_start
+#
+# Show ALL JOBS and ALL RESERVATIONS on cluster.
+SERVER;CMU PBS Professional Connector|Show jobs;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_show_jobs
+SERVER;CMU PBS Professional Connector|Show reservations;/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_show_reservations
+#
+# Update ALL PBS Professional Register Nodes' Network Entities or Logical Groups.
+SERVER;CMU PBS Professional Connector|Update logical groups (AOEs);/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_update_logicalgroup
+SERVER;CMU PBS Professional Connector|Update network entities (Placement Sets);/opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_update_networkentities
+#
+# PBS Professional Online Resources
+GUI;CMU PBS Professional Connector|Go to PBS Professional Online Documentation;BROWSE http://www.pbsworks.com/SupportDocuments.aspx
+GUI;CMU PBS Professional Connector|Go to PBS Professional User Forum;BROWSE http://forum.pbsworks.com
+GUI;CMU PBS Professional Connector|Contact PBS Professional Support;BROWSE http://www.pbsworks.com/PBSSupportForm.aspx
+### PBS Custom Menu Controls End ###

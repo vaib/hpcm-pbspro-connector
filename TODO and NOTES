@@ -80,7 +80,7 @@ IDEAS FOR INTEGRATION
  - OS Provisioning
    - Update CMU Provisioning Script to take advantage of concurrent node provisioning
      - qmgr -c "create hook provision_hook event = provision"
-     - qmgr -c "import hook provision_hook application/x-python default /opt/cmu/contrib/hpcm_pbspro_connector/bin/cmu_os_provision_hook.py"
+     - qmgr -c "import hook provision_hook application/x-python default /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_os_provision_hook.py"
      - qmgr -c "print hook @default"
         #
         # Create hooks and set their properties.

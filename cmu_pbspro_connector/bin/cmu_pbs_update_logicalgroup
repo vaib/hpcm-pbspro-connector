@@ -33,7 +33,7 @@ echo "Verifying that the cmu_provision hook is installed..."
 if [[ ! -n `${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'` ]] ; then
     echo "cmu_provision hook will be installed..."
     ${PBS_EXEC}/bin/qmgr -c "create hook cmu_provision"
-    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/cmu/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py"
+    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_os_provision_hook.py"
 fi
 echo "....... DONE"
 echo " "
