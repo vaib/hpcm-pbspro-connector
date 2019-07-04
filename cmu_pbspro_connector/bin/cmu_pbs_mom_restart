@@ -7,8 +7,8 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
-#  2) Script is executed on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the HPCM Management Node.
+#  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
 # This wrapper script is used to start or stop the PBS MOM daemon
@@ -23,7 +23,7 @@ else
 fi
 
 # Define CMU_PATH
-CMU_PATH=/opt/cmu/bin
+CMU_PATH=/opt/clmgr/bin
 
 # Simple Usage statement
 Usage() {
@@ -43,7 +43,7 @@ while getopts hu opt; do
 done
 
 # Setting up the variables in the order we are assuming they are passed in.
-nodelist=$*    # if used w/ CMU, this will be associated to CMU_TEMP_NODE_FILE
+nodelist=$*    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
 
 # Check to see if the nodes are provided as a file or a space-separated list of
 # nodes names
@@ -62,7 +62,7 @@ for node in $cmd ; do
     # If node does _not_ exist then echo simple error message
     if [ -n "$node_ans" ]; then
         case `basename $0` in
-            *stop)    $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"CMU Administrator stop PBS (`date +%m/%d/%y`)\""
+            *stop)    $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator stop PBS (`date +%m/%d/%y`)\""
                       ssh ${node} /etc/init.d/pbs stop ;;
             *restart) $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
                       ssh ${node} /etc/init.d/pbs restart ;;

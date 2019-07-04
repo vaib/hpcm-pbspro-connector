@@ -7,7 +7,9 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the CMU Management Node, which 
+#     maybe be on the same host OR on the HPE SGI Admin node (defined
+#     by PBS_SERVER.
 #  2) Script is executed on the CMU Management Node.
 
 # Purpose:
@@ -48,9 +50,17 @@ node=`hostname`
 # If node is _not_ the PBS_SERVER then echo simple error message
 if [ "${node}" == "${PBS_SERVER}" ]; then
     case `basename $0` in
-        *stop)    /etc/init.d/pbs stop ;;
-        *start)   /etc/init.d/pbs start ;;
+        *stop)       /etc/init.d/pbs stop ;;
+        *restart)    /etc/init.d/pbs restart ;;
+        *start)      /etc/init.d/pbs start ;;
     esac
 else
-    echo "Node: $node,  Error: Not the PBS_SERVER."
+    case `basename $0` in
+        *stop)       echo "Stopping PBS Server/Scheduler on ${PBS_SERVER}"
+                     ssh ${PBS_SERVER} /etc/init.d/pbs stop ;;
+        *restart)    echo "Restart PBS Server/Scheduler on ${PBS_SERVER}"
+                     ssh ${PBS_SERVER} /etc/init.d/pbs restart ;;
+        *start)      echo "Starting PBS Server/Scheduler on ${PBS_SERVER}"
+                     ssh ${PBS_SERVER} /etc/init.d/pbs start ;;
+    esac
 fi

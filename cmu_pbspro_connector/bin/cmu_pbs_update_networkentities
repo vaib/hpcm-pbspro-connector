@@ -5,12 +5,12 @@
 # indemnification of any kind.  All other terms and conditions are as
 # specified in the Altair PBS EULA.
 
-# Script to automatically update PBS Professional with HP CMU configured
-# groupings: network_entities.
+# Script to automatically update PBS Professional with HPCM configured
+# groupings: network_groups.
 #
-# HP CMU Network Entities: A network entity in HP Insight CMU corresponds to
-#       a single network switch that connects to a group of nodes. Based on this
-#       definition the network entity will be associated to a PBS Professional
+# HPCM Network Groups: A network group in HPCM corresponds to
+#       a single network group that connects to a group of nodes. Based on this
+#       definition the network group will be associated to a PBS Professional
 #       custom string_array resource called hp_network.
 #
 # PBS Professional supports the creation of node groupings (aka placement sets).
@@ -25,8 +25,8 @@
 # Source in the /etc/pbs.conf file
 [ -f /etc/pbs.conf ] && . /etc/pbs.conf
 
-CMU_PATH=/opt/cmu
-CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_entities
+CMU_PATH=/opt/clmgr
+CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_groups
 
 # Verify that hp_networkentities exists, otherwise we will create this automatically
 # for the administrator. We will check every time - just to be sure.
@@ -81,7 +81,7 @@ else
 fi
 
 echo " "
-echo "Updating PBS Professional with Network Topology information based on CMU Network Entities"
+echo "Updating PBS Professional with Network Topology information based on HPCM Network Groups"
 
 # Removing existing hp_networkentities from all PBS Professional registered nodes
 echo "Removing existing network entities on all registered PBS Professional nodes..."
@@ -91,8 +91,8 @@ done
 echo "....... DONE"
 echo " "
 
-# Configuring PBS Professional with HP CMU configured network_entities
-echo "Configuring network entities on all PBS Professional registered nodes..."
+# Configuring PBS Professional with HPCM configured network_groups
+echo "Configuring network groups on all PBS Professional registered nodes..."
 for network_entity in `${CMU_SHOW_NETWORK_ENTITIES}`; do
     for node in `${CMU_SHOW_NETWORK_ENTITIES} ${network_entity}`; do
         if [[ -n `${PBS_EXEC}/bin/pbsnodes ${node}` ]] ; then

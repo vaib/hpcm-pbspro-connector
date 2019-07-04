@@ -7,11 +7,11 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
-#  2) Script is executed on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the HPCM Management Node.
+#  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
-# Show the CMU Administrator the active jobs on the cluster
+# Show the HPCM Administrator the active jobs on the cluster
 # otherwise, say there is no jobs in the system
 
 # Source in PBS specific environment variables from pbs.conf
@@ -26,5 +26,5 @@ qstat_out=`${PBS_EXEC}/bin/qstat`
 if [ -z "$qstat_out" ]; then
     echo "No jobs in queue(s)"
 else
-    qstat -an1
+    ${PBS_EXEC}/bin/qstat -an1
 fi

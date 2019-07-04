@@ -5,12 +5,12 @@
 # indemnification of any kind.  All other terms and conditions are as
 # specified in the Altair PBS EULA.
 
-# Script to automatically update PBS Professional with HP CMU configured
-# groupings: logical_groups.
+# Script to automatically update PBS Professional with HPCM configured
+# groupings: image_groups.
 #
-# HP CMU Logical Groups: A logical group in HP Insight CMU represents a disk
+# HPCM Image Groups: A image group in HPCM represents a disk
 #       image that has been captured (backed up). Based on this definition the
-#       logical group will be associated to the PBS Professional application
+#       image group will be associated to the PBS Professional application
 #       operating environment (aoe) native resource.
 
 # TO-DO / Considerations:
@@ -21,19 +21,19 @@
 # Source in the /etc/pbs.conf file
 [ -f /etc/pbs.conf ] && . /etc/pbs.conf
 
-CMU_PATH=/opt/cmu
-CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_entities
-CMU_SHOW_LOGICAL_GROUPS=${CMU_PATH}/bin/cmu_show_logical_groups
+CMU_PATH=/opt/clmgr
+CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_groups
+CMU_SHOW_LOGICAL_GROUPS=${CMU_PATH}/bin/cmu_show_image_groups
 CMU_SHOW_NODES=${CMU_PATH}/bin/cmu_show_nodes
 
-echo "Updating PBS Professional Application Operating Environment (aoe) with CMU Logical Groups"
+echo "Updating PBS Professional Application Operating Environment (aoe) with HPCM Image Groups"
 
 # Verify that cmu_provion hook is installed.
 echo "Verifying that the cmu_provision hook is installed..."
 if [[ ! -n `${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'` ]] ; then
     echo "cmu_provision hook will be installed..."
     ${PBS_EXEC}/bin/qmgr -c "create hook cmu_provision"
-    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_os_provision_hook.py"
+    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/clmgr/contrib/cmu_pbspro_connector/bin/cmu_pbs_os_provision_hook.py"
 fi
 echo "....... DONE"
 echo " "
@@ -47,8 +47,8 @@ done
 echo "....... DONE"
 echo " "
 
-# Configuring PBS Professional with HP CMU configured logical_groups
-echo "Configuring logical_groups..."
+# Configuring PBS Professional with HPCM configured image_groups
+echo "Configuring image_groups..."
 for logical_group in `${CMU_SHOW_LOGICAL_GROUPS}`; do
     for node in `${CMU_SHOW_LOGICAL_GROUPS} ${logical_group}`; do
         if [[ -n `${PBS_EXEC}/bin/pbsnodes ${node}` ]] ; then

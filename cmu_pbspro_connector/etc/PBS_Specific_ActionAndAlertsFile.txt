@@ -1,5 +1,5 @@
-# This is a CMU action and alerts description file for the CMU PBS Professional Connector
-# This should be inserted into the CMU ActionAndAlerts.txt file located in /opt/cmu/etc/ActionAndAlertsFile.txt
+# This is a HPCM action and alerts description file for the HPCM PBS Professional Connector
+# This should be inserted into the HPCM ActionAndAlerts.txt file located in /opt/clmgr/etc/ActionAndAlertsFile.txt
 #
 #=============================================================
 #Description of the ACTIONS Format is:
@@ -23,9 +23,9 @@ ACTIONS
 #
 #Name                   "Description"           Time    string          mesurement_method       unit                    action_to_perform
 #kernel_version         "kernel version"        9999999 string          Instantaneous           release                 uname -r
-current_image           "CMU Active Image"      9999999 string          Instantaneous           image                   cat /root/CMU_CLONING_INFO | grep imagename | sed -e 's/imagename://g'
-node_state              "PBS Node State"        1       string          Instantaneous           node_state              EXTENDED /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_extended_metric_node_state
-job_count               "PBS Job Count"         1       numerical       Instantaneous   8       job(s)                  EXTENDED /opt/cmu/contrib/cmu_pbspro_connector/bin/cmu_pbs_extended_metric_job_count
+current_image           "HPCM Active Image"      9999999 string          Instantaneous           image                   cat /root/CMU_CLONING_INFO | grep imagename | sed -e 's/imagename://g'
+node_state              "PBS Node State"        1       string          Instantaneous           node_state              EXTENDED /opt/clmgr/contrib/cmu_pbspro_connector/bin/cmu_pbs_extended_metric_node_state
+job_count               "PBS Job Count"         1       numerical       Instantaneous   8       job(s)                  EXTENDED /opt/clmgr/contrib/cmu_pbspro_connector/bin/cmu_pbs_extended_metric_job_count
 pbs_daemon              "PBS Daemon Status"     1       string          Instantaneous           Status                  status=`ps -ef | grep pbs_mom | grep -v grep`; if [ -z "$status" ] ; then echo "Down"; else echo "Up"; fi
 #
 ### PBS Actions Configuration End ###
@@ -72,7 +72,7 @@ node_offline    "PBS Node Offline"  1       24      0       >       node(s) pbsn
 #                                 like the names of CMU_ALERT_NODES_EXPANDED.
 #    CMU_ALERT_TIMES            - The times the alert was triggered on each node.  This list is comma
 #                                 separated and ordered like the names of CMU_ALERT_NODES_EXPANDED.
-#    CMU_ALERT_SEQUENCE_FILE    - The path of the CMU "sequence" file containing the alerts and
+#    CMU_ALERT_SEQUENCE_FILE    - The path of the HPCM "sequence" file containing the alerts and
 #                                 alert values from the current monitoring pass.
 #
 #===========================================================================================
@@ -83,7 +83,7 @@ ALERT_REACTIONS
 ### PBS Alert_Reactions Configuration Start ###
 #
 #Alert_name     "Reaction Message"              ReactOnRaise|ReactAlways        action_to_perform
-#node_down      "Sending mail to root"          ReactOnRaise                    echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/pbs/default/bin/pbsnodes -l | grep down`" | mailx -s "CMU: Alert 'CMU_ALERT_NAME' raised." root
-#node_offline   "Sending mail to root"          ReactOnRaise                    echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/pbs/default/bin/pbsnodes -l | grep offline`" | mailx -s "CMU: Alert 'CMU_ALERT_NAME' raised." root
+#node_down      "Sending mail to root"          ReactOnRaise                    echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/pbs/default/bin/pbsnodes -l | grep down`" | mailx -s "HPCM: Alert 'CMU_ALERT_NAME' raised." root
+#node_offline   "Sending mail to root"          ReactOnRaise                    echo -e "Alert 'CMU_ALERT_NAME' raised on node(s) CMU_ALERT_NODES. \n\nDetails:\n`/opt/pbs/default/bin/pbsnodes -l | grep offline`" | mailx -s "HPCM: Alert 'CMU_ALERT_NAME' raised." root
 #
 ### PBS Alert_Reactions Configuration End ###

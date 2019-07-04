@@ -7,8 +7,8 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
-#  2) Script is executed on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the HPCM Management Node.
+#  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
 # This wrapper script is used for putting node(s) into production or
@@ -26,7 +26,7 @@ else
 fi
 
 # Define CMU_PATH
-CMU_PATH=/opt/cmu/bin
+CMU_PATH=/opt/clmgr/bin
 
 # Simple Usage statement
 Usage() {
@@ -46,7 +46,7 @@ while getopts hu opt; do
 done
 
 # Setting up the variables in the order we are assuming they are passed in.
-nodelist=$*    # if used w/ CMU, this will be associated to CMU_TEMP_NODE_FILE
+nodelist=$*    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
 
 # Check to see if the nodes are provided as a file or a space-separated list of
 # nodes names
@@ -56,7 +56,7 @@ else
     cmd="$nodelist"
 fi
 
-# Verify that the special admin PBS queue and HP CMU user_group called
+# Verify that the special admin PBS queue and HPCM custom_group called
 # "nodes_maintenance" is created so that we can move the node(s) into this queue.
 # This will ensure that if the node marked online for admin testing, the
 # node will not accept work from the users.
@@ -71,11 +71,11 @@ if [ -z "$queue_ans" ]; then
     $PBS_EXEC/bin/qmgr -c "set queue nodes_maint started=true"
 fi
 
-# If the user_group is NOT created, we will automatically create it before operating
+# If the custom_group is NOT created, we will automatically create it before operating
 # on the node(s).
-usergroup_ans=`$CMU_PATH/cmu_show_user_groups | grep nodes_maintenance 2>/dev/null`
+usergroup_ans=`$CMU_PATH/cmu_show_custom_groups | grep nodes_maintenance 2>/dev/null`
 if [ -z "$usergroup_ans" ]; then
-    $CMU_PATH/cmu_add_user_group nodes_maintenance
+    $CMU_PATH/cmu_add_custom_group nodes_maintenance
 fi
 
 # Pushing the nodelist through a for-loop to
@@ -88,15 +88,15 @@ for node in $cmd ; do
     if [ -n "$node_ans" ]; then
         case `basename $0` in
             *maintenance)   $PBS_EXEC/bin/pbsnodes -o ${node}
-                            $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"CMU Administrator put node into maintenance mode (`date +%m/%d/%y`)\""
+                            $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node into maintenance mode (`date +%m/%d/%y`)\""
                             $PBS_EXEC/bin/qmgr -c "set node ${node} queue = nodes_maint"
-                            $CMU_PATH/cmu_add_to_user_group -t nodes_offline ${node} 2>/dev/null
-                            $CMU_PATH/cmu_add_to_user_group -t nodes_maintenance ${node} 2>/dev/null ;;
+                            $CMU_PATH/cmu_add_to_custom_group -t nodes_offline ${node} 2>/dev/null
+                            $CMU_PATH/cmu_add_to_custom_group -t nodes_maintenance ${node} 2>/dev/null ;;
             *production)    $PBS_EXEC/bin/pbsnodes -o ${node}
                             $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
                             $PBS_EXEC/bin/qmgr -c "unset node ${node} queue"
-                            $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"CMU Administrator put node into production, but node is offline (`date +%m/%d/%y`)\""
-                            $CMU_PATH/cmu_del_from_user_group -t nodes_maintenance ${node} 2>/dev/null ;;
+                            $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node into production, but node is offline (`date +%m/%d/%y`)\""
+                            $CMU_PATH/cmu_del_from_custom_group -t nodes_maintenance ${node} 2>/dev/null ;;
         esac
     else
         echo "Node: $node,  Error: Unknown node"

@@ -7,8 +7,8 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
-#  2) Script is executed on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the HPCM Management Node.
+#  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
 
@@ -21,7 +21,7 @@ else
 fi
 
 # Define CMU_PATH
-CMU_PATH=/opt/cmu/bin
+CMU_PATH=/opt/clmgr/bin
 
 # Simple Usage statement
 Usage() {
@@ -41,7 +41,7 @@ while getopts c:hu opt; do
 done
 
 # Setting up the variables in the order we are assuming they are passed in.
-nodelist=$*    # if used w/ CMU, this will be associated to CMU_TEMP_NODE_FILE
+nodelist=$*    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
 
 if [ ! -n "$nodelist" ] ; then
     Usage
@@ -57,7 +57,7 @@ fi
 
 function Task()
 {
-    # Nodelist selected by admin via CMU interface
+    # Nodelist selected by admin via HPCM interface
     node_list="$1"
     task="$2"
 
@@ -68,14 +68,14 @@ function Task()
 
         if [ -n "$job_list" ] ; then
             case $task in
-                checkpoint)    ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has checkpointed the job" $job_list
-                               ${PBS_EXEC}/bin/qhold $job_list ;;
-                suspend)       ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has suspended the job" $job_list
-                               ${PBS_EXEC}/bin/qsig -s suspend $job_list ;;
-                delete)        ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has terminated the job" $job_list
-                               ${PBS_EXEC}/bin/qdel $job_list ;;
-                rerun)         ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has rerun the job. The job may start over from the beginning" $job_list
-                               ${PBS_EXEC}/bin/qrerun $job_list ;;
+                checkpoint)    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmsg \"(`date '+%m/%d/%Y %H:%M'`) HPCM Administrator has checkpointed the job\" $job_list"
+                               ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qhold $job_list ;;
+                suspend)       ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmsg \"(`date '+%m/%d/%Y %H:%M'`) HPCM Administrator has suspended the job\" $job_list"
+                               ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qsig -s suspend $job_list ;;
+                delete)        ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmsg \"(`date '+%m/%d/%Y %H:%M'`) HPCM Administrator has terminated the job\" $job_list"
+                               ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qdel $job_list ;;
+                rerun)         ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmsg \"(`date '+%m/%d/%Y %H:%M'`) HPCM Administrator has rerun the job. The job may start over from the beginning\" $job_list"
+                               ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qrerun $job_list ;;
             esac
             echo "DONE: $task $job_list"
         else
@@ -107,11 +107,11 @@ function Task()
         # Else notify the CMU Administrator that no jobs were found on the node, and exit
         if [ -n "$job_list" ] ; then
             case $task in
-                resume)     ${PBS_EXEC}/bin/qsig -s resume $job_list
-                            ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has resumed the job" $job_list ;;
-                release)    ${PBS_EXEC}/bin/qrls $job_list
+                resume)     ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qsig -s resume $job_list
+                            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmsg \"(`date '+%m/%d/%Y %H:%M'`) HPCM Administrator has resumed the job\" $job_list" ;;
+                release)    ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qrls $job_list
                             sleep 3  # It takes a few seconds to release the job, so wait and then qmsg the job.
-                            ${PBS_EXEC}/bin/qmsg "(`date '+%m/%d/%Y %H:%M'`) CMU Administrator has released the job" $job_list ;;
+                            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmsg \"(`date '+%m/%d/%Y %H:%M'`) HPCM Administrator has released the job\" $job_list" ;;
             esac
             echo "DONE: $task $job_list"
         else

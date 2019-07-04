@@ -7,11 +7,11 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
-#  2) Script is executed on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the HPCM Management Node.
+#  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
-# Show the CMU Administrator the active reservations on the cluster
+# Show the HPCM Administrator the active reservations on the cluster
 # otherwise, say there is no reservations in the system
 
 # Source in PBS specific environment variables from pbs.conf

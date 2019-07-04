@@ -7,8 +7,8 @@
 
 # Assumption:
 # This wrapper script assumes
-#  1) PBS Server/Scheduler is running on the CMU Management Node.
-#  2) Script is executed on the CMU Management Node.
+#  1) PBS Server/Scheduler is running on the HPCM Management Node.
+#  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
 # This script is used to create a job_count file that organizes
@@ -26,8 +26,8 @@ else
 fi
 
 # Define CMU_PBSPRO_CONNECTOR, CMU_PATH
-CMU_PBSPRO_CONNECTOR=/opt/cmu/contrib/cmu_pbspro_connector
-CMU_PATH=/opt/cmu/bin
+CMU_PBSPRO_CONNECTOR=/opt/clmgr/contrib/cmu_pbspro_connector
+CMU_PATH=/opt/clmgr/bin
 CMU_SUBMIT_EXTENDED_METRIC=${CMU_PATH}/cmu_submit_extended_metrics
 
 declare -A job_count

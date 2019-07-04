@@ -4,33 +4,33 @@
 # specified in the Altair PBS EULA.
 
 Prerequisites
- - PBS Professional Server/Scheduler is installed on the CMU Management Node
- - PBS Professional MOM is installed in CMU logical_groups (os images)
+ - PBS Professional Server/Scheduler is installed on the HPCM Management Node
+ - PBS Professional MOM is installed in HPCM image_groups (os images)
 
 Installation Instructions
-1. Copy cmu_pbspro_connector tarball to /opt/cmu/contrib
+1. Copy hpcm_pbspro_connector tarball to /opt/clmgr/contrib
 
-cp cmu_pbspro_connector*.tar.gz /opt/cmu/contrib
+cp hpcm_pbspro_connector*.tar.gz /opt/clmgr/contrib
 
-2. Change directory to /opt/cmu/contrib
+2. Change directory to /opt/clmgr/contrib
 
-cd /opt/cmu/contrib
+cd /opt/clmgr/contrib
 
-3. Unpackage cmu_pbspro_connector tarball
+3. Unpackage hpcm_pbspro_connector tarball
 
-tar zxvf cmu_pbspro_connector*.tar.gz
+tar zxvf hpcm_pbspro_connector*.tar.gz
 
-4. Update /opt/cmu/etc/ActionAndAlertsFile.txt w/ the PBS_Specific_ActionAndAlerts.txt
-   NOTE: File contains PBS Professional specific configurations that need to be incorporated in /opt/cmu/etc/ActionAndAlertsFile.txt file.
+4. Update /opt/clmgr/etc/ActionAndAlertsFile.txt w/ the PBS_Specific_ActionAndAlerts.txt
+   NOTE: File contains PBS Professional specific configurations that need to be incorporated in /opt/clmgr/etc/ActionAndAlertsFile.txt file.
 
 MANUALLY ADDED PBS PROFESSIONAL SPECIFIC CONTENT TO THE DESIGNATED AREAS OF THE FILE.
 
-5. Update /opt/cmu/etc/cmu_custom_menu w/ the PBS_Specific_cmu_custom_menu
-   NOTE: File contains PBS Professional specific configurations that need to be incorporated in /opt/cmu/etc/cmu_custom_menu
+5. Update /opt/clmgr/etc/cmu_custom_menu w/ the PBS_Specific_cmu_custom_menu
+   NOTE: File contains PBS Professional specific configurations that need to be incorporated in /opt/clmgr/etc/cmu_custom_menu
 
 mv ../etc/cmu_custom_menu ../etc/cmu_custom_menu.orig
 cat ../etc/cmu_custom_menu.orig cmu_pbspro_connector/etc/PBS_Specific_cmu_custom_menu > ../etc/cmu_custom_menu
 
-6. Restart CMU for configuration to take effect
+6. Restart CMU service for configuration to take effect
 
 /etc/init.d/cmu restart
