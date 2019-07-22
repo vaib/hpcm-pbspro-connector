@@ -47,7 +47,7 @@ pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: Env = %s" % repr(os.environ))
 pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: PBS Node = %s" % vnode)
 pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: AOE = %s" % aoe)
 
-ret = os.system("/opt/clmgr/contrib/cmu_pbspro_connector/bin/cmu_provision.sh " + aoe + " " + vnode)
+ret = os.system("/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_provision.sh " + aoe + " " + vnode)
 if ret != 0:
     pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: Failed - retcode = %s" % str(ret))
     e.reject("Reboot provisioning failed", ret)

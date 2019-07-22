@@ -57,7 +57,7 @@ else
 fi
 
 # Define CMU_PBSPRO_CONNECTOR, CMU_PATH
-CMU_PBSPRO_CONNECTOR=/opt/clmgr/contrib/cmu_pbspro_connector
+CMU_PBSPRO_CONNECTOR=/opt/clmgr/contrib/hpcm_pbspro_connector
 CMU_PATH=/opt/clmgr/bin
 CMU_SUBMIT_EXTENDED_METRIC=${CMU_PATH}/cmu_submit_extended_metrics
 

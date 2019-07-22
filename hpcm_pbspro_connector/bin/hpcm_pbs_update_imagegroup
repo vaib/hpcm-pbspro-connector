@@ -61,37 +61,37 @@ echo "Updating PBS Professional Application Operating Environment (aoe) with HPC
 
 # Verify that cmu_provion hook is installed.
 echo "Verifying that the cmu_provision hook is installed..."
-if [[ ! -n `${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'` ]] ; then
+if [[ ! -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'"` ]] ; then
     echo "cmu_provision hook will be installed..."
-    ${PBS_EXEC}/bin/qmgr -c "create hook cmu_provision"
-    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/clmgr/contrib/cmu_pbspro_connector/bin/cmu_pbs_os_provision_hook.py"
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create hook cmu_provision\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook cmu_provision application/x-python default /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py\""
 fi
 echo "....... DONE"
 echo " "
 
 # Removing existing aoe from all PBS Professional registered nodes
 echo "Removing existing aoe from all nodes..."
-for node in `${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]"` ; do
-    ${PBS_EXEC}/bin/qmgr -c "unset node ${node} resources_available.aoe"
-    ${PBS_EXEC}/bin/qmgr -c "unset node ${node} current_aoe"
+for node in `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes -a | grep -e \"^[[:alnum:]]\""` ; do
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"unset node ${node} resources_available.aoe\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"unset node ${node} current_aoe\""
 done
 echo "....... DONE"
 echo " "
 
 # Configuring PBS Professional with HPCM configured image_groups
 echo "Configuring image_groups..."
-for logical_group in `${CMU_SHOW_LOGICAL_GROUPS}`; do
+for image_group in `${CMU_SHOW_LOGICAL_GROUPS}`; do
     for node in `${CMU_SHOW_LOGICAL_GROUPS} ${logical_group}`; do
-        if [[ -n `${PBS_EXEC}/bin/pbsnodes ${node}` ]] ; then
-            ${PBS_EXEC}/bin/qmgr -c "set node ${node} resources_available.aoe += ${logical_group}"
+        if [[ -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes ${node}"` ]] ; then
+            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} resources_available.aoe += ${logical_group}\""
         fi
     done
 done
 
 # After all types of aoes are defined, setting the current_aoe.
-for node in `${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]"` ; do
+for node in `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes -a | grep -e \"^[[:alnum:]]\""` ; do
     current_aoe=`${CMU_SHOW_NODES} -n ${node} -o "%l"`
-    ${PBS_EXEC}/bin/qmgr -c "set node ${node} current_aoe = ${current_aoe}"
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} current_aoe = ${current_aoe}\""
 done
 echo "....... DONE"
 echo " "
