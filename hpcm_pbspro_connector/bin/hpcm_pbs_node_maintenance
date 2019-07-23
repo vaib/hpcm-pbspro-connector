@@ -62,7 +62,9 @@ CMU_PATH=/opt/clmgr/bin
 # Simple Usage statement
 Usage() {
     cat <<EOF
-Usage: `basename $0` nodelist
+Usage: `basename $0` action nodelist
+
+action can be either maintenance or production
 
 nodelist can be a space-separated list or a file
 
@@ -75,6 +77,10 @@ while getopts hu opt; do
         h|u) Usage ;;
     esac
 done
+
+# Now script takes an action argument, so separate it out from objects
+arg1=$1
+shift
 
 # Setting up the variables in the order we are assuming they are passed in.
 nodelist=$*    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
@@ -117,7 +123,7 @@ for node in $cmd ; do
     # If node does exist proceed with online/offline logic
     # If node does _not_ exist then echo simple error message
     if [ -n "$node_ans" ]; then
-        case `basename $0` in
+        case $arg1 in
             *maintenance)   $PBS_EXEC/bin/pbsnodes -o ${node}
                             $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node into maintenance mode (`date +%m/%d/%y`)\""
                             $PBS_EXEC/bin/qmgr -c "set node ${node} queue = nodes_maint"

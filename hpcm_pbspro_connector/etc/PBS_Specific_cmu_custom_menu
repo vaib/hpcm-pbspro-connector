@@ -52,25 +52,25 @@ SERVER;HPCM PBS Professional Connector|Show suspended jobs;/opt/clmgr/contrib/hp
 SERVER;HPCM PBS Professional Connector|Show checkpointed jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job show_checkpoint CMU_TEMP_NODE_FILE
 #
 # Offline vs Online of nodes
-SERVER;HPCM PBS Professional Connector|Offline/Drain node;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_offline CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Online node;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_online CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Offline/Drain node;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node offline CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Online node;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node online CMU_TEMP_NODE_FILE
 #
 # Production vs Maintenance of nodes
-SERVER;HPCM PBS Professional Connector|Put node into maintenance;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_maintenance CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Put node into production;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_production CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Put node into maintenance;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_maintenance maintenance CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Put node into production;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_maintenance production CMU_TEMP_NODE_FILE
 #
 # OS Provisioning Configuration
-#SERVER;HPCM PBS Professional Connector|Enable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision_enable CMU_TEMP_NODE_FILE
-#SERVER;HPCM PBS Professional Connector|Disable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision_disable CMU_TEMP_NODE_FILE
+#SERVER;HPCM PBS Professional Connector|Enable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision enable CMU_TEMP_NODE_FILE
+#SERVER;HPCM PBS Professional Connector|Disable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision disable CMU_TEMP_NODE_FILE
 #
 # Register / Unregister Nodes within PBS
-SERVER;HPCM PBS Professional Connector|Register node with PBS;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_register CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Unregister node with PBS;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_unregister CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Register node with PBS;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_manage register CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Unregister node with PBS;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_manage unregister CMU_TEMP_NODE_FILE
 #
 # Start/Stop PBS MOM on compute nodes
-SERVER;HPCM PBS Professional Connector|Restart PBS MOM;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_mom_restart CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Stop PBS MOM;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_mom_stop CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Start PBS MOM;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_mom_start CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Restart PBS MOM;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_mom restart CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Stop PBS MOM;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_mom stop CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Start PBS MOM;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_mom start CMU_TEMP_NODE_FILE
 #
 # Configure PBS Server and Scheduler config files
 # The following keywords have been deprecated as of 7.2: CMU_GUI_IP_ADDRESS and CMU_GUI_DISPLAY_NUMBER. Thus why the SERVER lines are commented out
@@ -83,9 +83,9 @@ TERMINAL;HPCM PBS Professional Connector|Configure PBS Custom Resources (qmgr);"
 TERMINAL;HPCM PBS Professional Connector|Configure PBS Scheduler (sched_config);"vi /var/spool/PBS/sched_priv/sched_config ; echo \"Scheduler re-reading sched_config\" ; kill -HUP `cat /var/spool/PBS/sched_priv/sched.lock` ; echo \"Done\""
 #
 # Start/Stop PBS Server/Scheduler on head node :: Assumes PBS Server/Scheduler is running on HPCM headnode.
-SERVER;HPCM PBS Professional Connector|Restart PBS Server/Scheduler;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_server_scheduler_restart
-SERVER;HPCM PBS Professional Connector|Stop PBS Server/Scheduler;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_server_scheduler_stop
-SERVER;HPCM PBS Professional Connector|Start PBS Server/Scheduler;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_server_scheduler_start
+SERVER;HPCM PBS Professional Connector|Restart PBS Server/Scheduler;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_server_scheduler restart
+SERVER;HPCM PBS Professional Connector|Stop PBS Server/Scheduler;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_server_scheduler stop
+SERVER;HPCM PBS Professional Connector|Start PBS Server/Scheduler;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_server_scheduler start
 #
 # Show ALL JOBS and ALL RESERVATIONS on cluster.
 SERVER;HPCM PBS Professional Connector|Show jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_show_jobs

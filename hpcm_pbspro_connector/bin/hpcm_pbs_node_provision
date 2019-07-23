@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 #
 # Copyright (C) 1994-2019 Altair Engineering, Inc.
 # For more information, contact Altair at www.altair.com.
@@ -42,21 +42,23 @@
 #  2) Script is executed on the HPCM Management Node.
 
 # Purpose:
-# This wrapper script is used for registering or unregistering compute node(s)
-# within PBS Professional.
+# This wrapper script is used for enabling or disabling OS provisioning
+# within PBS Professional on a list of nodes.
 
 # Source in PBS specific environment variables from pbs.conf
 if [ -f /etc/pbs.conf ]; then
-    . /etc/pbs.conf
+   . /etc/pbs.conf
 else
     echo "Unable to find /etc/pbs.conf"
     exit 1
 fi
-
+# Test
 # Simple Usage statement
 Usage() {
     cat <<EOF
-Usage: `basename $0` nodelist
+Usage: `basename $0` action nodelist
+
+action can be either enable or disable
 
 nodelist can be a space-separated list or a file
 
@@ -70,37 +72,48 @@ while getopts hu opt; do
     esac
 done
 
+# Now script takes an action argument, so separate it out from objects
+arg1=$1
+shift
+
 # Setting up the variables in the order we are assuming they are passed in.
 nodelist=$@    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
 
 # Check to see if the nodes are provided as a file or a space-separated list of
 # nodes names
 if [ -f "$nodelist" ] ; then
-    cmd=`cat $nodelist | sort`
+    cmd=`cat $nodelist`
 else
     cmd="$nodelist"
 fi
-	# Pushing the nodelist through a for-loop to
-	for node in $cmd ; do
-         if [ "$(uname -n)" == "${PBS_SERVER}" ]; then
-	    case `basename $0` in
-		*unregister)    $PBS_EXEC/bin/qmgr -c "delete node ${node}";;
-		*register)      $PBS_EXEC/bin/qmgr -c "create node ${node}";;
-	    esac
-         else
-        # Pushing the nodelist through a for-loop to
-            case `basename $0` in
-                *unregister)    
-                 ssh ${PBS_SERVER} "$PBS_EXEC/bin/qmgr -c \"delete node ${node}\"";;
-                *register)      
-                 ssh ${PBS_SERVER} "$PBS_EXEC/bin/qmgr -c \"create node ${node}\""
 
-                 case "$node" in
-		     gfx*)   ssh ${PBS_SERVER} "$PBS_EXEC/bin/qmgr -c \"set node ${node} queue = gfx \"";;
-	         esac
-                 ssh ${PBS_SERVER} "$PBS_EXEC/bin/qmgr -c \"set node ${node} power_provisioning=true \"";;
-            esac
+# Verify that the CMU provisioning hook is installed, otherwise we will create this
+# automatically or the administrator. We will check every time - just to be sure.
+echo "Verifying CMU provision hook is configured in PBS Professional."
+echo "Checking cmu_provision_hook exists..."
+chk_prov_hook=`${PBS_EXEC}/bin/qmgr -c "print hook cmu_provision" 2>/dev/null`
+if [[ -n "${chk_prov_hook}" ]] ; then
+    echo "cmu_provision hook EXISTS!"
+else
+    echo "Creating cmu_provision hook..."
+    ${PBS_EXEC}/bin/qmgr -c "create hook cmu_provision event = provision"
+    ${PBS_EXEC}/bin/qmgr -c "import hook cmu_provision application/x-python default /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py"
+    echo "....... DONE"
+fi
 
-         fi
-        done
+# Pushing the nodelist through a for-loop to
+for node in $cmd ; do
+    # Quick check to see if the node even exists in PBS
+    node_ans=`$PBS_EXEC/bin/pbsnodes $node 2>/dev/null`
 
+    # If node does exist proceed with enable/disable logic
+    # If node does _not_ exist then echo simple error message
+    if [ -n "$node_ans" ]; then
+        case $arg1 in
+            *enable)    $PBS_EXEC/bin/qmgr -c "set node ${node} provision_enable=true";;
+            *disable)   $PBS_EXEC/bin/qmgr -c "set node ${node} provision_enable=false";;
+        esac
+    else
+        echo "Node: $node,  Error: Unknown node"
+    fi
+done

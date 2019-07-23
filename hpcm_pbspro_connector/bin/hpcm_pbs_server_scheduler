@@ -61,7 +61,9 @@ CMU_PATH=/opt/cmu/bin
 # Simple Usage statement
 Usage() {
     cat <<EOF
-Usage: `basename $0`
+Usage: `basename $0` action
+
+action can be start, stop or restart
 
 nodelist can be a space-separated list or a file
 
@@ -80,13 +82,13 @@ node=`hostname`
 # If node is PBS_SERVER proceed with case statement logic
 # If node is _not_ the PBS_SERVER then echo simple error message
 if [ "${node}" == "${PBS_SERVER}" ]; then
-    case `basename $0` in
+    case $1 in
         *stop)       /etc/init.d/pbs stop ;;
         *restart)    /etc/init.d/pbs restart ;;
         *start)      /etc/init.d/pbs start ;;
     esac
 else
-    case `basename $0` in
+    case $1 in
         *stop)       echo "Stopping PBS Server/Scheduler on ${PBS_SERVER}"
                      ssh ${PBS_SERVER} /etc/init.d/pbs stop ;;
         *restart)    echo "Restart PBS Server/Scheduler on ${PBS_SERVER}"

@@ -56,7 +56,9 @@ fi
 # Simple Usage statement
 Usage() {
     cat <<EOF
-Usage: `basename $0` nodelist
+Usage: `basename $0` action nodelist
+
+action can be either register or unregister
 
 nodelist can be a space-separated list or a file
 
@@ -69,6 +71,10 @@ while getopts hu opt; do
         h|u) Usage ;;
     esac
 done
+
+# Now script takes an action argument, so separate it out from objects
+arg1=$1
+shift
 
 # Setting up the variables in the order we are assuming they are passed in.
 nodelist=$@    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
@@ -83,13 +89,13 @@ fi
 	# Pushing the nodelist through a for-loop to
 	for node in $cmd ; do
          if [ "$(uname -n)" == "${PBS_SERVER}" ]; then
-	    case `basename $0` in
+	    case $arg1 in
 		*unregister)    $PBS_EXEC/bin/qmgr -c "delete node ${node}";;
 		*register)      $PBS_EXEC/bin/qmgr -c "create node ${node}";;
 	    esac
          else
         # Pushing the nodelist through a for-loop to
-            case `basename $0` in
+	    case $arg1 in
                 *unregister)    
                  ssh ${PBS_SERVER} "$PBS_EXEC/bin/qmgr -c \"delete node ${node}\"";;
                 *register)      
