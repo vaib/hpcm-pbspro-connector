@@ -41,15 +41,15 @@
 # PBS Custom Menu Controls Start ###
 #
 # Delete, Suspend, Resume, Checkpoint, Release, Show Running, Show Suspended, Show Checkpointed jobs on select node(s)
-SERVER;HPCM PBS Professional Connector|Delete jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_delete CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Suspend jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_suspend CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Resume jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_resume CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Checkpoint jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_checkpoint CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Release jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_release CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Rerun/Checkpoint-Migrate jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_rerun CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Show running jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_show_run CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Show suspended jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_show_suspend CMU_TEMP_NODE_FILE
-SERVER;HPCM PBS Professional Connector|Show checkpointed jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job_show_checkpoint CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Delete jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job delete CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Suspend jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job suspend CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Resume jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job resume CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Checkpoint jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job checkpoint CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Release jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job release CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Rerun/Checkpoint-Migrate jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job rerun CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Show running jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job show_run CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Show suspended jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job show_suspend CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Show checkpointed jobs;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_job show_checkpoint CMU_TEMP_NODE_FILE
 #
 # Offline vs Online of nodes
 SERVER;HPCM PBS Professional Connector|Offline/Drain node;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_offline CMU_TEMP_NODE_FILE

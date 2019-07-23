@@ -57,7 +57,9 @@ CMU_PATH=/opt/clmgr/bin
 # Simple Usage statement
 Usage() {
          cat <<EOF
-Usage: `basename $0` nodelist
+Usage: `basename $0` action nodelist
+
+action can be anyone of delete,suspend,rerun,resume,checkpoint,release,show_run,show_suspend,show_checkpoint
 
 nodelist can be a space-separated list or a file
 
@@ -70,6 +72,10 @@ while getopts c:hu opt; do
         h|u) Usage ;;
     esac
 done
+
+# Now script takes an action argument, so separate it out from objects.
+arg1=$1
+shift
 
 # Setting up the variables in the order we are assuming they are passed in.
 nodelist=$*    # if used w/ HPCM, this will be associated to CMU_TEMP_NODE_FILE
@@ -265,7 +271,7 @@ done
 # If the node exists within PBS, continue to execute the tasks. There is a catchall
 # if the task requested is NOT available.
 if [ -n "${isPBS_Node}" ] ; then
-    case `basename $0` in
+    case $arg1 in
         *show_run)        Task "${isPBS_Node}" "show_run" ;;
         *show_suspend)    Task "${isPBS_Node}" "show_suspend" ;;
         *show_checkpoint) Task "${isPBS_Node}" "show_checkpoint" ;;
