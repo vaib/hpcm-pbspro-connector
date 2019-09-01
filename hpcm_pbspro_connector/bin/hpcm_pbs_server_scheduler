@@ -61,11 +61,11 @@ CMU_PATH=/opt/cmu/bin
 # Simple Usage statement
 Usage() {
     cat <<EOF
-Usage: `basename $0` action
+Usage: `basename $0` action server
 
 action can be start, stop or restart
 
-nodelist can be a space-separated list or a file
+server can be primary or secondary. If not provided, PBS service on both nodes will be acted upon.
 
 EOF
     exit 0
@@ -80,20 +80,49 @@ done
 node=`hostname`
 
 # If node is PBS_SERVER proceed with case statement logic
-# If node is _not_ the PBS_SERVER then echo simple error message
+# If node is _not_ the PBS_SERVER then check which server to proceed with
+# If server not provided then proceed with both servers
 if [ "${node}" == "${PBS_SERVER}" ]; then
     case $1 in
         *stop)       /etc/init.d/pbs stop ;;
         *restart)    /etc/init.d/pbs restart ;;
         *start)      /etc/init.d/pbs start ;;
     esac
+elif [ -n "$2" ]; then
+    if [ "$2" == "primary" ]; then
+        case $1 in
+            *stop)       echo "Stopping Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
+                         ssh ${PBS_PRIMARY} /etc/init.d/pbs stop ;;
+            *restart)    echo "Restart Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
+                         ssh ${PBS_PRIMARY} /etc/init.d/pbs restart ;;
+            *start)      echo "Starting Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
+                         ssh ${PBS_PRIMARY} /etc/init.d/pbs start ;;
+        esac
+    fi
+
+    if [ "$2" == "secondary" ]; then
+        case $1 in
+            *stop)       echo "Stopping Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
+                         ssh ${PBS_SECONDARY} /etc/init.d/pbs stop ;;
+            *restart)    echo "Restart Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
+                         ssh ${PBS_SECONDARY} /etc/init.d/pbs restart ;;
+            *start)      echo "Starting Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
+                         ssh ${PBS_SECONDARY} /etc/init.d/pbs start ;;
+        esac
+    fi
 else
     case $1 in
-        *stop)       echo "Stopping PBS Server/Scheduler on ${PBS_SERVER}"
-                     ssh ${PBS_SERVER} /etc/init.d/pbs stop ;;
-        *restart)    echo "Restart PBS Server/Scheduler on ${PBS_SERVER}"
-                     ssh ${PBS_SERVER} /etc/init.d/pbs restart ;;
-        *start)      echo "Starting PBS Server/Scheduler on ${PBS_SERVER}"
-                     ssh ${PBS_SERVER} /etc/init.d/pbs start ;;
+        *stop)       echo "Stopping Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
+                     ssh ${PBS_PRIMARY} /etc/init.d/pbs stop ;;
+                     echo "Stopping Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
+                     ssh ${PBS_SECONDARY} /etc/init.d/pbs stop ;;
+        *restart)    echo "Restart Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
+                     ssh ${PBS_PRIMARY} /etc/init.d/pbs restart ;;
+                     echo "Restart Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
+                     ssh ${PBS_SECONDARY} /etc/init.d/pbs restart ;;
+        *start)      echo "Starting Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
+                     ssh ${PBS_PRIMARY} /etc/init.d/pbs start ;;
+                     echo "Starting Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
+                     ssh ${PBS_SECONDARY} /etc/init.d/pbs start ;;
     esac
 fi

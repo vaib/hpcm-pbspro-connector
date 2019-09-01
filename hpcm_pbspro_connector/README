@@ -41,6 +41,13 @@ Notes
    (README file will need to specify the requirement that the PBS client commands are to be installed on the admin node.
    o   qmgr -c "set server managers += <site_user_account>" - - optional instructions)
    (example user admin1 logged into the GUI and he is added to the managers list then he is allowed to make changes to the scheduler)
+   mention os provisioning changes. user need to supply kernal, roofs type and node type via environment variable (e.g. PBS_HPCM_KERNAL) in qsub. also pbsnodes will have resources_available.kernal=<list of kernal> fetched by using a command as part of provisioning setup.
+   list of nodes: compute, ice-compute, leader list of rootfs type: disk, ramfs
+   a hook will run when vnode is restarted to get list of kernals which is set as a list to resources_available.kernal. periodically this list is refreshed. kernal as a custom string-array resources is set up.
+   requires pwd-less ssh from server to admin
+   Added support for PBS HA.
+   - Admin can start/stop services on primary or secondary or both.
+   - A configuration file in json format need to be imported to the OS provisioning hook. Update name of admin node in the config file. 
 
    Install option 1: Using dedicated node
    - PBS Professional Server/Scheduler is installed on the Service Node

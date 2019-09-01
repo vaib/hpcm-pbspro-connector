@@ -63,8 +63,11 @@ echo "Updating PBS Professional Application Operating Environment (aoe) with HPC
 echo "Verifying that the cmu_provision hook is installed..."
 if [[ ! -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'"` ]] ; then
     echo "cmu_provision hook will be installed..."
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create hook cmu_provision\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create hook cmu_provision event = provision\""
+
     ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook cmu_provision application/x-python default /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook cmu_provision application/x-config default /opt/clmgr/contrib/hpcm_pbspro_connector/etc/hpcm_pbs_os_provision_hook.json\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create resource kernal type=string_array,flag=h\""
 fi
 echo "....... DONE"
 echo " "
@@ -73,6 +76,7 @@ echo " "
 echo "Removing existing aoe from all nodes..."
 for node in `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes -a | grep -e \"^[[:alnum:]]\""` ; do
     ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"unset node ${node} resources_available.aoe\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"unset node ${node} resources_available.kernal\""
     ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"unset node ${node} current_aoe\""
 done
 echo "....... DONE"
@@ -81,9 +85,9 @@ echo " "
 # Configuring PBS Professional with HPCM configured image_groups
 echo "Configuring image_groups..."
 for image_group in `${CMU_SHOW_LOGICAL_GROUPS}`; do
-    for node in `${CMU_SHOW_LOGICAL_GROUPS} ${logical_group}`; do
+    for node in `${CMU_SHOW_LOGICAL_GROUPS} ${image_group}`; do
         if [[ -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes ${node}"` ]] ; then
-            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} resources_available.aoe += ${logical_group}\""
+            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} resources_available.aoe += ${image_group}\""
         fi
     done
 done
@@ -93,5 +97,15 @@ for node in `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes -a | grep -e \"^[[:alnu
     current_aoe=`${CMU_SHOW_NODES} -n ${node} -o "%l"`
     ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} current_aoe = ${current_aoe}\""
 done
+
+# setting kernals available.
+for kernal in `cimage --show-images | grep -v 'image:' | tr -s ' ' | sort | uniq`; do
+    for node in `${CMU_SHOW_LOGICAL_GROUPS} ${logical_group}`; do
+        if [[ -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes ${node}"` ]] ; then
+            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} resources_available.kernal += ${kernal}\""
+        fi
+    done
+done
+
 echo "....... DONE"
 echo " "
