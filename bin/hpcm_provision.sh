@@ -50,15 +50,20 @@ ERR=255
 CMU_PATH=/opt/clmgr
 CMU_SHOW_LOGICAL_GROUPS=${CMU_PATH}/bin/cmu_show_image_groups
 CMU_SHOW_NODES=${CMU_PATH}/bin/cmu_show_nodes
-CMU_CLONE=${CMU_PATH}/bin/cmu_clone
-
+CMU_FLAT_LEADER_PROV=/opt/sgi/sbin/cinstallman
+CMU_ICE_PROV=/opt/sgi/sbin/cimage
+CMU_POWER=/opt/clmgr/bin/cpower
 # Verify that CMU commands
 if [ ! -x "${CMU_SHOW_LOGICAL_GROUPS}" ]; then
     myecho "could not find executable ${CMU_SHOW_LOGICAL_GROUPS}"
     exit $ERR
 fi
-if [ ! -x "${CMU_CLONE}" ]; then
-    myecho "could not find executable ${CMU_CLONE}"
+if [ ! -x "${CMU_FLAT_LEADER_PROV}" ]; then
+    myecho "could not find executable ${CMU_FLAT_LEADER_PROV}"
+    exit $ERR
+fi
+if [ ! -x "${CMU_ICE_PROV}" ]; then
+    myecho "could not find executable ${CMU_ICE_PROV}"
     exit $ERR
 fi
 
@@ -70,9 +75,11 @@ function myecho
 # Check arguments
 # 1. HPCM image group (aka PBS aoe)
 # 2. valid HPCM client nodes
-
-if [[ $# < 2 ]]; then
-    myecho "usage: $0 <HPCM image group> <HPCM node to clone>"
+# 3. specify kernel of the image
+# 4. specify node type eg., compute, ice-compute & leader
+# 5. specify type of rootfs eg., disk , nfs or rootfs 
+if [[ $# < 5 ]]; then
+    myecho "usage: $0 <HPCM image group> <HPCM node to clone> <kernel of image> <node type> <root filesystem>"
     exit 1
 fi
 
@@ -80,6 +87,9 @@ myecho "starting: $0 $*"
 
 cmu_lg=$1
 node=$2
+kernel=$3
+prov=$4
+rootfs=$5
 
 # Reject provisioning the HPCM Server, which is also running PBS Professional Server/Scheduler
 hostname=`hostname`
@@ -110,9 +120,16 @@ if [ "${current_image}" = "${cmu_lg}" ]; then
 fi
 
 # We made it this far.. Kick off provisioning :o)
-${CMU_CLONE} -n ${node} -i ${cmu_lg}
+if [ $prov == "ice-compute" ]; then
+    $CMU_ICE_PROV --set $rootfs $cmu_lg $kernel $node && $CMU_POWER node reset $node && $CMU_POWER node on $node
+elif [ $prov == "leader" ]; then
+    $CMU_FLAT_LEADER_PROV --assign-image --image $cmu_lg --node $node --kernel $kernel && $CMU_FLAT_LEADER_PROV --next-boot image --node $node && $CMU_POWER leader reset $node && $CMU_POWER leader on $node
+else
+    $CMU_FLAT_LEADER_PROV --assign-image --image $cmu_lg --node $node --kernel $kernel && $CMU_FLAT_LEADER_PROV --set-rootfs $rootfs --node $node && $CMU_FLAT_LEADER_PROV --next-boot image --node $node && $CMU_POWER node reset $node && $CMU_POWER node on $node 
+fi
+
 if [ $? -ne 0 ]; then
-    myecho "CMU Provisioning FAILED!"
+    myecho "HPCM OS Provisioning FAILED!"
     exit $ERR
 fi
 
