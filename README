@@ -62,17 +62,17 @@ Prerequisites
 Installation Instructions
 On the Admin Node do the following:
 
-1. Copy hpcm_PBS Professional_connector tarball to /opt/clmgr/contrib
+1. Copy hpcm_pbspro_connector tarball to /opt/clmgr/contrib
 
-cp hpcm_PBS Professional_connector*.tar.gz /opt/clmgr/contrib
+cp hpcm_pbspro_connector*.tar.gz /opt/clmgr/contrib
 
 2. Change directory to /opt/clmgr/contrib
 
 cd /opt/clmgr/contrib
 
-3. Unpackage hpcm_PBS Professional_connector tarball
+3. Unpackage hpcm_pbspro_connector tarball
 
-tar zxvf hpcm_PBS Professional_connector*.tar.gz
+tar zxvf hpcm_pbspro_connector*.tar.gz
 
 4. Update /opt/clmgr/etc/ActionAndAlertsFile.txt w/ the PBS_Specific_ActionAndAlerts.txt
    NOTE: File contains PBS Professional specific configurations that need to be incorporated in /opt/clmgr/etc/ActionAndAlertsFile.txt file.
@@ -83,9 +83,9 @@ MANUALLY ADDED PBS PROFESSIONAL SPECIFIC CONTENT TO THE DESIGNATED AREAS OF THE 
    NOTE: File contains PBS Professional specific configurations that need to be incorporated in /opt/clmgr/etc/cmu_custom_menu
 
 mv ../etc/cmu_custom_menu ../etc/cmu_custom_menu.orig
-cat ../etc/cmu_custom_menu.orig hpcm_PBS Professional_connector/etc/PBS_Specific_hpcm_custom_menu > ../etc/cmu_custom_menu
+cat ../etc/cmu_custom_menu.orig hpcm_pbspro_connector/etc/PBS_Specific_hpcm_custom_menu > ../etc/cmu_custom_menu
 
-6. Update /opt/clmgr/contrib/hpcm_PBS Professional_connector/etc/hpcm_pbs_os_provision_hook.json w/ the admin node name where HPCM is installed.
+6. Update /opt/clmgr/contrib/hpcm_pbspro_connector/etc/hpcm_pbs_os_provision_hook.json w/ the admin node name where HPCM is installed.
    NOTE: Config file contains name of admin node for PBS Pro to determine where HPCM module is installed. 
 
 7. Restart CMU service for configuration to take effect
