@@ -59,29 +59,29 @@
 CMU_PATH=/opt/clmgr
 CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_groups
 
-# Verify that hp_networkgroups exists, otherwise we will create this automatically
+# Verify that hpe_networkgroups exists, otherwise we will create this automatically
 # for the administrator. We will check every time - just to be sure.
 
-# Test if the hp_networkgroups custom resource is defined, otherwise
+# Test if the hpe_networkgroups custom resource is defined, otherwise
 # create the custom resource.
-echo "Looking for custom resource (hp_networkgroups)..."
-resourcedef_ans=`ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"print resource hp_networkgroups\" 2> /dev/null"`
+echo "Looking for custom resource (hpe_networkgroups)..."
+resourcedef_ans=`${PBS_EXEC}/bin/qmgr -c "print resource hpe_networkgroups" 2> /dev/null`
 ### manage output
 if [ -n "$resourcedef_ans" ] ; then
-    echo "hp_networkgroups EXISTS!"
+    echo "hpe_networkgroups EXISTS!"
 else
-    echo "Creating custom resource (hp_networkgroups) ..."
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create resource hp_networkgroups type=string\""
+    echo "Creating custom resource (hpe_networkgroups) ..."
+    ${PBS_EXEC}/bin/qmgr -c "create resource hpe_networkgroups type=string"
     echo "....... DONE"
 fi
 
-# Check for hp_networkgroups in qmgr node_group_key and make sure node_group_key_enable it true
-chk_node_group_key_list=`ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qstat -Bf | grep node_group_key | grep hp_networkgroups`"
+# Check for hpe_networkgroups in qmgr node_group_key and make sure node_group_key_enable it true
+chk_node_group_key_list=`${PBS_EXEC}/bin/qstat -Bf | grep node_group_key | grep hpe_networkgroups`
 if [[ -n "$chk_node_group_key_list" ]] ; then
-    echo "Custom resource hp_networkgroups is defined in node_group_key!"
+    echo "Custom resource hpe_networkgroups is defined in node_group_key!"
 else
-    echo "Defining custom resource hp_networkgroups in node_group_key..."
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set server node_group_key+=hp_networkgroups\""
+    echo "Defining custom resource hpe_networkgroups in node_group_key..."
+    ${PBS_EXEC}/bin/qmgr -c "set server node_group_key+=hpe_networkgroups"
     echo "....... DONE"
 fi
 
@@ -90,17 +90,17 @@ if [[ "$chk_node_group_enable" == "True" ]] ; then
     echo "PBS node_group_enable EXISTS!"
 else
     echo "Defining node_group_enable=true..."
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set server node_group_enable=true\""
+    ${PBS_EXEC}/bin/qmgr -c "set server node_group_enable=true"
     echo "....... DONE"
 fi
 
 echo " "
 echo "Updating PBS Professional with Network Topology information based on HPCM Network Groups"
 
-# Removing existing hp_networkgroups from all PBS Professional registered nodes
+# Removing existing hpe_networkgroups from all PBS Professional registered nodes
 echo "Removing existing network groups on all registered PBS Professional nodes..."
-for node in `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes -a | grep -e \"^[[:alnum:]]\""` ; do
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"unset node ${node} resources_available.hp_networkgroups\""
+for node in `${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]"` ; do
+    ${PBS_EXEC}/bin/qmgr -c "unset node ${node} resources_available.hpe_networkgroups"
 done
 echo "....... DONE"
 echo " "
@@ -109,8 +109,8 @@ echo " "
 echo "Configuring network groups on all PBS Professional registered nodes..."
 for network_entity in `${CMU_SHOW_NETWORK_ENTITIES}`; do
     for node in `${CMU_SHOW_NETWORK_ENTITIES} ${network_entity}`; do
-        if [[ -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes ${node}"` ]] ; then
-            ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} resources_available.hp_networkgroups += ${network_entity}\""
+        if [[ -n `${PBS_EXEC}/bin/pbsnodes ${node} 2> /dev/null` ]] ; then
+            ${PBS_EXEC}/bin/qmgr -c "set node ${node} resources_available.hpe_networkgroups += ${network_entity}"
         fi
     done
 done

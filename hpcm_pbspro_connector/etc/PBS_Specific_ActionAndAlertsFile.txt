@@ -60,7 +60,7 @@ ACTIONS
 #
 #Name                   "Description"           Time    string          mesurement_method       unit                    action_to_perform
 #kernel_version         "kernel version"        9999999 string          Instantaneous           release                 uname -r
-current_image           "HPCM Active Image"      9999999 string          Instantaneous           image                   cat /root/CMU_CLONING_INFO | grep imagename | sed -e 's/imagename://g'
+#current_image           "HPCM Active Image"      9999999 string          Instantaneous           image                   cat /root/CMU_CLONING_INFO | grep imagename | sed -e 's/imagename://g'
 node_state              "PBS Node State"        1       string          Instantaneous           node_state              EXTENDED /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_extended_metric_node_state
 job_count               "PBS Job Count"         1       numerical       Instantaneous   8       job(s)                  EXTENDED /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_extended_metric_job_count
 pbs_daemon              "PBS Daemon Status"     1       string          Instantaneous           Status                  status=`ps -ef | grep pbs_mom | grep -v grep`; if [ -z "$status" ] ; then echo "Down"; else echo "Up"; fi

@@ -57,5 +57,5 @@ pbs_rstat_out=`${PBS_EXEC}/bin/pbs_rstat`
 if [ -z "$pbs_rstat_out" ]; then
     echo "No PBS Reservations"
 else
-    pbs_rstat
+    ${PBS_EXEC}/bin/pbs_rstat
 fi

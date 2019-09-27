@@ -172,7 +172,7 @@ function Task()
                 # Determine job list output for suspend jobs
                 # If qselect is empty, exit the logic immediately. Otherwise executing qstat with an empty result
                 # will result in qstat output all jobs
-                jobs=`qselect -s S`
+                jobs=`${PBS_EXEC}/bin/qselect -s S`
                 if [[ -n "$jobs" ]] ; then
                     job_list_sample=`${PBS_EXEC}/bin/qstat -n1 $jobs | tail -n +6 | awk '{print $1","$12}' | sed -e 's/\/\w*//g' | sed -e 's/\*\w//g'`
                 else
