@@ -76,7 +76,7 @@ Prerequisites
 Installation Instructions
    On the Admin Node do the following:
 
-   1. Copy hpcm-pbspro-connector-<version>.tar.gz tarball to /opt/clmgr/contrib
+   1. Download hpcm-pbspro-connector-<version>.tar.gz tarball to /opt/clmgr/contrib
 
       cp hpcm-pbspro-connector*.tar.gz /opt/clmgr/contrib
 
@@ -86,7 +86,7 @@ Installation Instructions
 
    3. Unpackage hpcm-pbspro-connector tarball
 
-      tar zxvf hpcm_pbspro_connector*.tar.gz
+      tar zxvf hpcm-pbspro-connector*.tar.gz
 
    4. Move hpcm_pbspro_connector directory from hpcm-pbspro-connector-<version>
       to /opt/clmgr/contrib
