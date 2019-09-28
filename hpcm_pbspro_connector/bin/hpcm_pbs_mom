@@ -100,11 +100,11 @@ for node in $cmd ; do
     if [ -n "$node_ans" ]; then
         case $arg1 in
             *stop)    $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator stop PBS (`date +%m/%d/%y`)\""
-                      ssh ${node} /etc/init.d/pbs stop ;;
+                      ssh ${node} systemctl stop pbs;;
             *restart) $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
-                      ssh ${node} /etc/init.d/pbs restart ;;
+                      ssh ${node} systemctl restart pbs;;
             *start)   $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
-                      ssh ${node} /etc/init.d/pbs start ;;
+                      ssh ${node} systemctl start pbs;;
         esac
     else
         echo "Node: $node,  Error: Unknown node"

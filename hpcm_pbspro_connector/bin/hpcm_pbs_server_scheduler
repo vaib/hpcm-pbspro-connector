@@ -86,18 +86,18 @@ if [ -n "$2" ]; then
     if [ "$2" == "primary" ]; then
         if [ "${node}" == "${PBS_SERVER}" ]; then
             case $1 in
-                *stop)       /etc/init.d/pbs stop ;;
-                *restart)    /etc/init.d/pbs restart ;;
-                *start)      /etc/init.d/pbs start ;;
+                *stop)       systemctl stop pbs;;
+                *restart)    systemctl restart pbs;;
+                *start)      systemctl start pbs;;
             esac
         else
             case $1 in
                 *stop)       echo "Stopping Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
-                             ssh ${PBS_PRIMARY} /etc/init.d/pbs stop ;;
+                             ssh ${PBS_PRIMARY} systemctl stop pbs;;
                 *restart)    echo "Restart Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
-                             ssh ${PBS_PRIMARY} /etc/init.d/pbs restart ;;
+                             ssh ${PBS_PRIMARY} systemctl restart pbs;;
                 *start)      echo "Starting Primary PBS Server/Scheduler on ${PBS_PRIMARY}"
-                             ssh ${PBS_PRIMARY} /etc/init.d/pbs start ;;
+                             ssh ${PBS_PRIMARY} systemctl start pbs;;
             esac
 	fi
     fi
@@ -106,28 +106,28 @@ if [ -n "$2" ]; then
         # Assuming that secondary will NOT be installed on admin node but can be handled if done so
         case $1 in
             *stop)       echo "Stopping Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
-                         ssh ${PBS_SECONDARY} /etc/init.d/pbs stop ;;
+                         ssh ${PBS_SECONDARY} systemctl stop pbs;;
             *restart)    echo "Restart Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
-                         ssh ${PBS_SECONDARY} /etc/init.d/pbs restart ;;
+                         ssh ${PBS_SECONDARY} systemctl restart pbs;;
             *start)      echo "Starting Secondary PBS Server/Scheduler on ${PBS_SECONDARY}"
-                         ssh ${PBS_SECONDARY} /etc/init.d/pbs start ;;
+                         ssh ${PBS_SECONDARY} systemctl start pbs;;
         esac
     fi
 else
     if [ "${node}" == "${PBS_SERVER}" ]; then
         case $1 in
-            *stop)       /etc/init.d/pbs stop ;;
-            *restart)    /etc/init.d/pbs restart ;;
-            *start)      /etc/init.d/pbs start ;;
+            *stop)       systemctl stop pbs;;
+            *restart)    systemctl restart pbs;;
+            *start)      systemctl start pbs;;
         esac
     else
         case $1 in
             *stop)       echo "Stopping PBS Server/Scheduler on ${PBS_SERVER}"
-                         ssh ${PBS_SERVER} /etc/init.d/pbs stop ;;
+                         ssh ${PBS_SERVER} systemctl stop pbs;;
             *restart)    echo "Restart PBS Server/Scheduler on ${PBS_SERVER}"
-                         ssh ${PBS_SERVER} /etc/init.d/pbs restart ;;
+                         ssh ${PBS_SERVER} systemctl restart pbs;;
             *start)      echo "Starting PBS Server/Scheduler on ${PBS_SERVER}"
-                         ssh ${PBS_SERVER} /etc/init.d/pbs start ;;
+                         ssh ${PBS_SERVER} systemctl start pbs;;
         esac
     fi
 fi

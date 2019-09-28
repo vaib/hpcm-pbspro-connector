@@ -176,7 +176,7 @@ function Task()
                 if [[ -n "$jobs" ]] ; then
                     job_list_sample=`${PBS_EXEC}/bin/qstat -n1 $jobs | tail -n +6 | awk '{print $1","$12}' | sed -e 's/\/\w*//g' | sed -e 's/\*\w//g'`
                 else
-                    echo "No jobs to $task on $node_list"
+                    echo "No suspended jobs to show on $node_list"
                     exit
                 fi
             elif [[ "$task" == "show_checkpoint" ]] ; then
@@ -187,11 +187,11 @@ function Task()
                 if [[ -n "$jobs" ]] ; then
                     job_list_sample=`${PBS_EXEC}/bin/qstat -n1 $jobs | tail -n +6 | awk '{print $1","$12}' | sed -e 's/\/\w*//g' | sed -e 's/\*\w//g'`
                 else
-                    echo "No jobs to $task on $node_list"
+                    echo "No checkpointed jobs to show on $node_list"
                     exit
                 fi
             else
-                echo "Error: error condition in show_suspend and show_checkpoint"
+                echo "Error: error condition in show suspend and show checkpoint"
             fi
 
             # if job list sample is NOT empty, this section will create an associative array with job, node
@@ -223,7 +223,7 @@ function Task()
                     done
                 done
             else
-                echo "No jobs to $task on $node_list"
+                echo "No jobs to show on $node_list"
                 exit
             fi
         fi
@@ -241,11 +241,11 @@ function Task()
                 fi
             done
             if [[ ! -n "${output%}" ]] ; then
-                echo "No jobs to $task on $node_list"
+                echo "No running jobs to show on $node_list"
                 exit
             fi
         else
-            echo "No jobs to $task on $node_list"
+            echo "No jobs to show on $node_list"
             exit
         fi
     else
