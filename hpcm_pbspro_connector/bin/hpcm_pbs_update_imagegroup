@@ -53,20 +53,20 @@
 [ -f /etc/pbs.conf ] && . /etc/pbs.conf
 
 CMU_PATH=/opt/clmgr
-CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_groups
-CMU_SHOW_LOGICAL_GROUPS=${CMU_PATH}/bin/cmu_show_image_groups
-CMU_SHOW_NODES=${CMU_PATH}/bin/cmu_show_nodes
+CMU_SHOW_NETWORK_ENTITIES="${CMU_PATH}/bin/cm group network show"
+CMU_SHOW_LOGICAL_GROUPS="${CMU_PATH}/bin/cm image show"
+CMU_SHOW_NODES="${CMU_PATH}/bin/cm node show"
 
 echo "Updating PBS Professional Application Operating Environment (aoe) with HPCM Image Groups"
 
-# Verify that cmu_provion hook is installed.
-echo "Verifying that the cmu_provision hook is installed..."
-if [[ ! -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c 'print hook cmu_provision'"` ]] ; then
-    echo "cmu_provision hook will be installed..."
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create hook cmu_provision event = provision\""
+# Verify that pcm_provion hook is installed.
+echo "Verifying that the pcm_provision hook is installed..."
+if [[ ! -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c 'print hook pcm_provision'"` ]] ; then
+    echo "pcm_provision hook will be installed..."
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"create hook pcm_provision event = provision\""
 
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook cmu_provision application/x-python default /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py\""
-    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook cmu_provision application/x-config default /opt/clmgr/contrib/hpcm_pbspro_connector/etc/hpcm_pbs_os_provision_hook.json\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook pcm_provision application/x-python default /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_os_provision_hook.py\""
+    ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"import hook pcm_provision application/x-config default /opt/clmgr/contrib/hpcm_pbspro_connector/etc/hpcm_pbs_os_provision_hook.json\""
 fi
 echo "....... DONE"
 echo " "
@@ -83,16 +83,16 @@ echo " "
 # Configuring PBS Professional with HPCM configured image_groups
 echo "Configuring image_groups..."
 for image_group in `${CMU_SHOW_LOGICAL_GROUPS}`; do
-    for node in `${CMU_SHOW_LOGICAL_GROUPS} ${image_group}`; do
+     for node in `${CMU_SHOW_NODES}`; do
         if [[ -n `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes ${node}"` ]] ; then
             ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} resources_available.aoe += ${image_group}\""
         fi
-    done
+     done
 done
 
 # After all types of aoes are defined, setting the current_aoe.
 for node in `ssh ${PBS_SERVER} "${PBS_EXEC}/bin/pbsnodes -a | grep -e \"^[[:alnum:]]\""` ; do
-    current_aoe=`${CMU_SHOW_NODES} -n ${node} -o "%l"`
+    current_aoe=`${CMU_SHOW_NODES} -n ${node} -I --display-no-header | awk '{print $2}'`
     ssh ${PBS_SERVER} "${PBS_EXEC}/bin/qmgr -c \"set node ${node} current_aoe = ${current_aoe}\""
 done
 

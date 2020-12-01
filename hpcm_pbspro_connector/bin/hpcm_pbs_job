@@ -141,7 +141,7 @@ function Task()
         done
 
         # If the job_list is NOT empty, perform the requested task (resume or release) with the job_list
-        # Else notify the CMU Administrator that no jobs were found on the node, and exit
+        # Else notify the PCM Administrator that no jobs were found on the node, and exit
         if [ -n "$job_list" ] ; then
             case $task in
                 resume)     ssh ${PBS_SERVER} ${PBS_EXEC}/bin/qsig -s resume $job_list
@@ -231,7 +231,7 @@ function Task()
     # This section runs through the logic for showing the run job(s) on the selected node(s)
     elif [[ "$task" == "show_run" ]] ; then
         # If the node_list is NOT empty, test for a job executing on the node.
-        # Else notify the CMU Administrator that no jobs were found on the node, and exit
+        # Else notify the PCM Administrator that no jobs were found on the node, and exit
         if [ -n "$node_list" ] ; then
             for node in `echo "$node_list"` ; do
                 job_test=`${PBS_EXEC}/bin/pbsnodes ${node} | grep jobs`

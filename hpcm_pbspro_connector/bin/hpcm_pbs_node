@@ -95,9 +95,9 @@ fi
 
 # If the custom_group is NOT created, we will automatically create it before operating
 # on the node(s).
-usergroup_ans=`$CMU_PATH/cmu_show_custom_groups | grep nodes_offline`
+usergroup_ans=`$CMU_PATH/cm group custom show | grep nodes_offline`
 if [ ! -n "$usergroup_ans" ]; then
-    $CMU_PATH/cmu_add_custom_group nodes_offline
+    $CMU_PATH/cm group custom add -c nodes_offline
 fi
 
 # Pushing the nodelist through a for-loop to
@@ -112,19 +112,19 @@ for node in $cmd ; do
         case $arg1 in
             *offline)   $PBS_EXEC/bin/pbsnodes -o ${node}
                         $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node offline (`date +%m/%d/%y`)\""
-                        $CMU_PATH/cmu_add_to_custom_group -t nodes_offline ${node} 2>/dev/null ;;
+                        $CMU_PATH/cm group custom add -n ${node} nodes_offline 2>/dev/null ;;
             *online)    $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
                         $PBS_EXEC/bin/pbsnodes -r ${node}
-                        $CMU_PATH/cmu_del_from_custom_group -t nodes_offline ${node} 2>/dev/null ;;
+                        $CMU_PATH/cm group custom del -n ${node} nodes_offline 2>/dev/null ;;
         esac
       else
         case $arg1 in
             *offline)   ssh ${PBS_SERVER} "$PBS_EXEC/bin/pbsnodes -o -C \"HPCM Administrator put node offline (`date +%m/%d/%y`)\" ${node}"
                         ssh ${PBS_SERVER} $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node offline (`date +%m/%d/%y`)\""
-                        $CMU_PATH/cmu_add_to_custom_group -t nodes_offline ${node} 2>/dev/null ;;
+			$CMU_PATH/cm group custom add -n ${node} nodes_offline 2>/dev/null ;;
             *online)    ssh ${PBS_SERVER} $PBS_EXEC/bin/qmgr -c "set node ${node} comment = \"HPCM Administrator put node online (`date +%m/%d/%y`)\" "
                         ssh ${PBS_SERVER} "$PBS_EXEC/bin/pbsnodes -r ${node} -C \"HPCM Administrator put node online (`date +%m/%d/%y`)\""
-                        $CMU_PATH/cmu_del_from_custom_group -t nodes_offline ${node} 2>/dev/null ;;
+			$CMU_PATH/cm group custom del -n ${node} nodes_offline 2>/dev/null ;;
        esac
       fi
     else

@@ -57,7 +57,7 @@
 [ -f /etc/pbs.conf ] && . /etc/pbs.conf
 
 CMU_PATH=/opt/clmgr
-CMU_SHOW_NETWORK_ENTITIES=${CMU_PATH}/bin/cmu_show_network_groups
+CMU_SHOW_NETWORK_ENTITIES="${CMU_PATH}/bin/cm group network show"
 
 # Verify that hpe_networkgroups exists, otherwise we will create this automatically
 # for the administrator. We will check every time - just to be sure.

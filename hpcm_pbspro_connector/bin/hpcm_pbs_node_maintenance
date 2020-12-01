@@ -110,9 +110,9 @@ fi
 
 # If the custom_group is NOT created, we will automatically create it before operating
 # on the node(s).
-usergroup_ans=`$CMU_PATH/cmu_show_custom_groups | grep nodes_maintenance 2>/dev/null`
+usergroup_ans=`$CMU_PATH/cm group custom show | grep nodes_maintenance 2>/dev/null`
 if [ -z "$usergroup_ans" ]; then
-    $CMU_PATH/cmu_add_custom_group nodes_maintenance
+    $CMU_PATH/cm group custom add -c nodes_maintenance
 fi
 
 # Pushing the nodelist through a for-loop to
@@ -127,13 +127,13 @@ for node in $cmd ; do
             *maintenance)   $PBS_EXEC/bin/pbsnodes -o ${node}
                             $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node into maintenance mode (`date +%m/%d/%y`)\""
                             $PBS_EXEC/bin/qmgr -c "set node ${node} queue = nodes_maint"
-                            $CMU_PATH/cmu_add_to_custom_group -t nodes_offline ${node} 2>/dev/null
-                            $CMU_PATH/cmu_add_to_custom_group -t nodes_maintenance ${node} 2>/dev/null ;;
+                            $CMU_PATH/cm group custom add -n ${node} nodes_offline 2>/dev/null
+                            $CMU_PATH/cm group custom add -n ${node} nodes_maintenance 2>/dev/null ;;
             *production)    $PBS_EXEC/bin/pbsnodes -o ${node}
                             $PBS_EXEC/bin/qmgr -c "unset node ${node} comment"
                             $PBS_EXEC/bin/qmgr -c "unset node ${node} queue"
                             $PBS_EXEC/bin/qmgr -c "set node ${node} comment += \"HPCM Administrator put node into production, but node is offline (`date +%m/%d/%y`)\""
-                            $CMU_PATH/cmu_del_from_custom_group -t nodes_maintenance ${node} 2>/dev/null ;;
+                            $CMU_PATH/cm group custom del -n ${node} nodes_maintenance 2>/dev/null ;;
         esac
     else
         echo "Node: $node,  Error: Unknown node"
