@@ -60,8 +60,8 @@ SERVER;HPCM PBS Professional Connector|Put node into maintenance;/opt/clmgr/cont
 SERVER;HPCM PBS Professional Connector|Put node into production;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_maintenance production CMU_TEMP_NODE_FILE
 #
 # OS Provisioning Configuration
-#SERVER;HPCM PBS Professional Connector|Enable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision enable CMU_TEMP_NODE_FILE
-#SERVER;HPCM PBS Professional Connector|Disable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision disable CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Enable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision enable CMU_TEMP_NODE_FILE
+SERVER;HPCM PBS Professional Connector|Disable PBS OS provisioning;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_provision disable CMU_TEMP_NODE_FILE
 #
 # Register / Unregister Nodes within PBS
 SERVER;HPCM PBS Professional Connector|Register node with PBS;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_node_manage register CMU_TEMP_NODE_FILE
@@ -106,7 +106,7 @@ SERVER;HPCM PBS Professional Connector|Show jobs;/opt/clmgr/contrib/hpcm_pbspro_
 SERVER;HPCM PBS Professional Connector|Show reservations;/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_show_reservations
 #
 # Update ALL PBS Professional Register Nodes' Network Groups or Image Groups.
-#SERVER;HPCM PBS Professional Connector|Update image groups (AOEs);/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_update_imagegroup
+SERVER;HPCM PBS Professional Connector|Update image groups (AOEs);/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_update_imagegroup
 SERVER;HPCM PBS Professional Connector|Update network groups (Placement Sets);/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_pbs_update_networkgroups
 #
 # PBS Professional Online Resources
