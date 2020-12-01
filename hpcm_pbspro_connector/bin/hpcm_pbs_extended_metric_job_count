@@ -78,14 +78,14 @@ for n in `echo "${node_list}"` ; do
     else
         job_ct=0
     fi
-    job_count+=( ["$job_ct"]=" $n" )
+    job_count+=( ["$n"]=" $job_ct" )
 done
 
 # Construct the state_file, which will be read in by the
 # cmu_submit_extended_metric command
 for a in "${!job_count[@]}" ; do
-    echo "BEGIN_NODE ${job_count[$a]}
-job_count $a" >> ${state_file}
+    echo "BEGIN_NODE $a
+job_count ${job_count[$a]}" >> ${state_file}
 done
 
 # Execute the cmu_submit_extended_metric
