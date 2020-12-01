@@ -35,7 +35,7 @@
 #
 
 import pbs
-import os
+import subprocess
 
 e = pbs.event()
 vnode = e.vnode
@@ -45,6 +45,8 @@ pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: Env = %s" % repr(os.environ))
 pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: PBS Node = %s" % vnode)
 pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: AOE = %s" % aoe)
 
+config = {}
+
 # Provision hook will run on PBS Server but provisioning is started from Admin node, both may not run on same node.
 # Check for admin node? Read from json config file.
 if 'PBS_HOOK_CONFIG_FILE' in os.environ:
@@ -52,24 +54,32 @@ if 'PBS_HOOK_CONFIG_FILE' in os.environ:
     config_file = os.environ["PBS_HOOK_CONFIG_FILE"]
     #pbs.logmsg(pbs.EVENT_DEBUG, "%s: Config file is %s" % (caller_name(), config_file))
     config = json.load(open(config_file, 'r'), object_hook=decode_dict)
+    admin = config['admin-node']
+else:
+    admin = pbs.server().name
 
 server = pbs.server().name
-admin = config['admin-node']
 
 pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: server name = %s" % server)
 pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: admin node = %s" % admin)
 
 if admin == server:
-    ret = os.system("/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_provision.sh " + aoe + " " + vnode)
-    if ret != 0:
-        pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: Failed - retcode = %s" % str(ret))
-        e.reject("Reboot provisioning failed", ret)
-    else:
-        e.accept(0)
+    cmd=['/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_provision.sh',aoe,vnode]
 else:
-    ret = os.system("ssh ${admin} /opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_provision.sh " + aoe + " " + vnode)
-    if ret != 0:
-        pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: Failed - retcode = %s" % str(ret))
-        e.reject("Reboot provisioning failed", ret)
-    else:
-        e.accept(0)
+    cmd=['ssh',admin,'/opt/clmgr/contrib/hpcm_pbspro_connector/bin/hpcm_provision.sh',aoe,vnode]
+
+pbs.logmsg(pbs.EVENT_DEBUG, "cmd=%s" % (cmd))
+process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+output, err = process.communicate()
+
+pbs.logmsg(pbs.EVENT_DEBUG, "output=%s" % (output.strip()))
+pbs.logmsg(pbs.EVENT_DEBUG, "err=%s" % (err))
+
+ret = process.wait()
+
+if ret != 0:
+    pbs.logmsg(pbs.LOG_DEBUG, "PROVISIONING: Failed - retcode = %s" % str(ret))
+    e.reject("Reboot provisioning failed", ret)
+else:
+    e.accept(0)
+
