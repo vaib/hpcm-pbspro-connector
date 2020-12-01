@@ -74,14 +74,14 @@ state=`${PBS_EXEC}/bin/pbsnodes -a | grep -e "^[[:alnum:]]" -e "state " | sed '1
 for s in `echo "$state"` ; do
    y=`echo $s | awk 'BEGIN { FS = ";" } ; { print $1 }'`
    z=`echo $s | awk 'BEGIN { FS = ";" } ; { print $2 }'`
-   node_state+=( ["$z"]=" $y" )
+   node_state+=( ["$y"]=" $z" )
 done
 
 # Construct the state_file, which will be read in by the
 # cmu_submit_extended_metric command
 for a in "${!node_state[@]}" ; do
-    echo "BEGIN_NODE ${node_state[$a]}
-node_state $a" >> ${state_file}
+    echo "BEGIN_NODE $a
+node_state ${node_state[$a]}" >> ${state_file}
 done
 
 # Execute the cmu_submit_extended_metric
